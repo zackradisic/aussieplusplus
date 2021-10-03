@@ -7,13 +7,13 @@ use super::source::Source;
 
 pub struct Lexer<T>
 where
-    T: Source + Iterator<Item = char>,
+    T: Source,
 {
     src: T,
     line: usize,
 }
 
-impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
+impl<'a, T: Source> Lexer<T> {
     pub fn new(src: T) -> Self {
         Self { src, line: 1 }
     }

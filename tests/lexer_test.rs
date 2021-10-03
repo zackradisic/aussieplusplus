@@ -3,11 +3,7 @@ use aussie_plus_plus::{
     token::{Kind, Token},
 };
 
-fn test_lexing_with_src<T: Iterator<Item = char> + Source>(
-    expected_tokens: Vec<Token>,
-    expected_error: bool,
-    iter: T,
-) {
+fn test_lexing_with_src<T: Source>(expected_tokens: Vec<Token>, expected_error: bool, iter: T) {
     let mut lexer = lexer::Lexer::new(iter);
     let (tokens, had_error) = lexer.lex();
 
@@ -215,11 +211,11 @@ pub fn test_separation() {
     test_lexing(
         "BLIMEY MATEWALKABOUT",
         vec![
-            Token::new(Kind::Ident("LIMEY".into()), 1),
+            Token::new(Kind::Ident("BLIMEY".into()), 1),
             Token::new(Kind::Ident("MATEWALKABOUT".into()), 1),
             Token::new(Kind::EOF, 1),
         ],
-        true,
+        false,
     );
 }
 

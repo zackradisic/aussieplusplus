@@ -3,7 +3,7 @@ use std::{iter::Rev, str::Chars};
 
 use itertools::{multipeek, MultiPeek};
 
-pub trait Source {
+pub trait Source: Iterator<Item = char> {
     fn reset_peek(&mut self);
     fn peek(&mut self) -> Option<&char>;
 }
