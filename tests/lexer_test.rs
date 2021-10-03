@@ -1,10 +1,14 @@
 use aussie_plus_plus::{
-    lexer,
+    lexer::{self, source::Source},
     token::{Kind, Token},
 };
 
-fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
-    let mut lexer = lexer::Lexer::new(src.chars());
+fn test_lexing_with_src<T: Iterator<Item = char> + Source>(
+    expected_tokens: Vec<Token>,
+    expected_error: bool,
+    iter: T,
+) {
+    let mut lexer = lexer::Lexer::new(iter);
     let (tokens, had_error) = lexer.lex();
 
     assert_eq!(had_error, expected_error);
@@ -19,6 +23,46 @@ fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
         }
     }
     assert_eq!(tokens, expected_tokens);
+}
+
+fn test_lexing_upside_down(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
+    test_lexing_with_src(
+        expected_tokens,
+        expected_error,
+        lexer::source::UpsideDown::new(src.chars()),
+    )
+}
+
+fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
+    test_lexing_with_src(
+        expected_tokens,
+        expected_error,
+        lexer::source::Regular::new(src.chars()),
+    )
+}
+
+#[test]
+pub fn test_upside_down() {
+    test_lexing_upside_down(
+        "ᄅƖ = z NOƆƎɹ I
+        ⅄ƎʞƆIq ʞOOHƆ
+        0Ɩ = ʎ NOƆƎɹ I
+        ϛ = x NOƆƎɹ I
+        Ǝ┴∀W ⅄ƎWI˥q",
+        vec![
+            Token::new(Kind::BlimeyMate, 1),
+            Token::new(Kind::IRecon, 2),
+            Token::new(Kind::Ident("x".into()), 2),
+            Token::new(Kind::Assign, 2),
+            Token::new(Kind::Number(5f64), 2),
+            Token::new(Kind::IRecon, 3),
+            Token::new(Kind::Ident("y".into()), 3),
+            Token::new(Kind::Assign, 3),
+            Token::new(Kind::Number(10f64), 3),
+            Token::new(Kind::ChookBickey, 4),
+        ],
+        false,
+    );
 }
 
 #[test]

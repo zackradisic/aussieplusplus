@@ -1,25 +1,24 @@
 use anyhow::{Error, Result};
-use std::str::Chars;
 use thiserror::Error;
-
-use itertools::{multipeek, MultiPeek};
 
 use crate::{
     eat_keyword, eat_keyword_or_ident, peek_adv,
     token::{Kind, Token},
 };
 
-pub struct Lexer<'a> {
-    src: MultiPeek<Chars<'a>>,
+use super::source::Source;
+
+pub struct Lexer<T>
+where
+    T: Source + Iterator<Item = char>,
+{
+    src: T,
     line: usize,
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(src: Chars<'a>) -> Self {
-        Self {
-            src: multipeek(src),
-            line: 1,
-        }
+impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
+    pub fn new(src: T) -> Self {
+        Self { src, line: 1 }
     }
 
     pub fn lex(&mut self) -> (Vec<Token>, bool) {
