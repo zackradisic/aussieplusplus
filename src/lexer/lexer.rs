@@ -1,10 +1,7 @@
 use anyhow::{Error, Result};
 use thiserror::Error;
 
-use crate::{
-    eat_keyword, eat_keyword_or_ident, peek_adv,
-    token::{Kind, Token},
-};
+use crate::token::{Kind, Token};
 
 use super::source::Source;
 
@@ -62,14 +59,14 @@ impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
             ';' => Kind::Semicolon,
 
             '=' => {
-                if peek_adv!(self, '=') {
+                if self.peek_adv('=') {
                     Kind::Equals
                 } else {
                     Kind::Assign
                 }
             }
             '/' => {
-                if peek_adv!(self, '/') {
+                if self.peek_adv('/') {
                     self.eat_line();
                     return self.next_token();
                 } else {
@@ -77,28 +74,28 @@ impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
                 }
             }
             '!' => {
-                if peek_adv!(self, '=') {
+                if self.peek_adv('=') {
                     Kind::BangEqual
                 } else {
                     Kind::Bang
                 }
             }
             '<' => {
-                if peek_adv!(self, '=') {
+                if self.peek_adv('=') {
                     Kind::LTE
                 } else {
                     Kind::LeftBoomerang
                 }
             }
             '>' => {
-                if peek_adv!(self, '=') {
+                if self.peek_adv('=') {
                     Kind::GTE
                 } else {
                     Kind::RightBoomerang
                 }
             }
             '&' => {
-                if peek_adv!(self, '&') {
+                if self.peek_adv('&') {
                     Kind::And
                 } else {
                     return Err(LexError::ExpectedCharacter(
@@ -110,7 +107,7 @@ impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
                 }
             }
             '|' => {
-                if peek_adv!(self, '|') {
+                if self.peek_adv('|') {
                     Kind::Or
                 } else {
                     return Err(LexError::ExpectedCharacter(
@@ -124,53 +121,53 @@ impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
             c => match c.to_ascii_lowercase() {
                 'c' => {
                     if self.peek_is('h') {
-                        eat_keyword_or_ident!(self, c, Kind::ChookBickey)?
+                        self.eat_keyword_or_ident(c, Kind::ChookBickey)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'w' => {
                     if self.peek_is('a') {
-                        eat_keyword_or_ident!(self, c, Kind::Walkabout)?
+                        self.eat_keyword_or_ident(c, Kind::Walkabout)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'b' => {
                     if self.peek_is('l') {
-                        eat_keyword_or_ident!(self, c, Kind::BlimeyMate)?
+                        self.eat_keyword_or_ident(c, Kind::BlimeyMate)?
                     } else if self.peek_is('a') {
-                        eat_keyword_or_ident!(self, c, Kind::Bail)?
+                        self.eat_keyword_or_ident(c, Kind::Bail)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'i' => {
                     if self.peek_is(' ') {
-                        eat_keyword_or_ident!(self, c, Kind::IRecon)?
+                        self.eat_keyword_or_ident(c, Kind::IRecon)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'y' => {
                     if self.peek_is('a') {
-                        eat_keyword_or_ident!(self, c, Kind::YaRecon)?
+                        self.eat_keyword_or_ident(c, Kind::YaRecon)?
                     } else if self.peek_is('e') {
-                        eat_keyword_or_ident!(self, c, Kind::YeahNah)?
+                        self.eat_keyword_or_ident(c, Kind::YeahNah)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'h' => {
                     if self.peek_is('a') {
-                        eat_keyword_or_ident!(self, c, Kind::HardYakkaFor)?
+                        self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'n' => {
                     if self.peek_is('a') {
-                        eat_keyword_or_ident!(self, c, Kind::NahYeah)?
+                        self.eat_keyword_or_ident(c, Kind::NahYeah)?
                     } else {
                         self.eat_identifier(c)?
                     }
@@ -309,6 +306,55 @@ impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
         }
     }
 
+    fn eat_keyword_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {
+        let res: Result<Kind> = match self.eat_keyword(kind) {
+            Err(_) => self.eat_identifier(first),
+            Ok(kind) => Ok(kind),
+        };
+        res
+    }
+
+    fn eat_keyword(&mut self, kind: Kind) -> Result<Kind> {
+        let s: String = kind.literal().chars().skip(1).collect();
+        let len = s.len();
+
+        let mut ret: Option<Result<Kind>> = None;
+        let mut expected: char;
+
+        for i in 0..len {
+            expected = s.chars().nth(i).unwrap();
+            match self.peek_multi() {
+                None => {
+                    self.src.reset_peek();
+                    ret = Some(Err(
+                        LexError::ExpectedCharacter(expected, '\0', self.line).new()
+                    ));
+                    break;
+                }
+                Some(c) => {
+                    if c.to_ascii_lowercase().ne(&expected) {
+                        self.src.reset_peek();
+                        ret = Some(Err(
+                            LexError::ExpectedCharacter(expected, c, self.line).new()
+                        ));
+                        break;
+                    }
+                }
+            };
+        }
+
+        if let Some(e) = ret {
+            e
+        } else {
+            // Space, new-line, or semi-colon must separate token
+            self.expect_separator()?;
+            for _ in 0..len {
+                let _ = self.src.next();
+            }
+            Ok(kind)
+        }
+    }
+
     fn next(&mut self) -> Option<char> {
         self.src.next()
     }
@@ -336,6 +382,20 @@ impl<'a, T: Source + Iterator<Item = char>> Lexer<T> {
     /// character ahead
     fn peek_multi(&mut self) -> Option<char> {
         self.src.peek().map(|&p| p)
+    }
+
+    fn peek_adv(&mut self, c: char) -> bool {
+        match self.peek() {
+            Some(ch) => {
+                if ch == c {
+                    let _ = self.next();
+                    true
+                } else {
+                    false
+                }
+            }
+            None => false,
+        }
     }
 }
 
