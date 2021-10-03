@@ -39,23 +39,6 @@ macro_rules! peek_adv {
     };
 }
 
-/// Check if char matches input
-macro_rules! peek_is {
-    ($self:ident, $char:expr) => {{
-        let ret = match $self.peek() {
-            Some(ch) => {
-                if ch.to_ascii_lowercase().eq(&$char) {
-                    true
-                } else {
-                    false
-                }
-            }
-            None => false,
-        };
-        ret
-    }};
-}
-
 macro_rules! eat_keyword_or_ident {
     ($self:ident, $first_char:expr, $kind:path) => {{
         let res: Result<Kind> = match eat_keyword!($self, $kind) {
@@ -100,14 +83,7 @@ macro_rules! eat_keyword {
             e
         } else {
             // Space, new-line, or semi-colon must separate token
-            if !$self.peek_separator() {
-                return Err(LexError::ExpectedCharacters(
-                    vec![' ', '\n', ';'],
-                    $self.peek().unwrap_or_default(),
-                    $self.line,
-                )
-                .new());
-            }
+            $self.expect_separator()?;
             for _ in 0..len {
                 let _ = $self.src.next();
             }
@@ -231,53 +207,53 @@ impl<'a> Lexer<'a> {
             }
             c => match c.to_ascii_lowercase() {
                 'c' => {
-                    if peek_is!(self, 'h') {
+                    if self.peek_is('h') {
                         eat_keyword_or_ident!(self, c, Kind::ChookBickey)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'w' => {
-                    if peek_is!(self, 'a') {
+                    if self.peek_is('a') {
                         eat_keyword_or_ident!(self, c, Kind::Walkabout)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'b' => {
-                    if peek_is!(self, 'l') {
+                    if self.peek_is('l') {
                         eat_keyword_or_ident!(self, c, Kind::BlimeyMate)?
-                    } else if peek_is!(self, 'a') {
+                    } else if self.peek_is('a') {
                         eat_keyword_or_ident!(self, c, Kind::Bail)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'i' => {
-                    if peek_is!(self, ' ') {
+                    if self.peek_is(' ') {
                         eat_keyword_or_ident!(self, c, Kind::IRecon)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'y' => {
-                    if peek_is!(self, 'a') {
+                    if self.peek_is('a') {
                         eat_keyword_or_ident!(self, c, Kind::YaRecon)?
-                    } else if peek_is!(self, 'e') {
+                    } else if self.peek_is('e') {
                         eat_keyword_or_ident!(self, c, Kind::YeahNah)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'h' => {
-                    if peek_is!(self, 'a') {
+                    if self.peek_is('a') {
                         eat_keyword_or_ident!(self, c, Kind::HardYakkaFor)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'n' => {
-                    if peek_is!(self, 'a') {
+                    if self.peek_is('a') {
                         eat_keyword_or_ident!(self, c, Kind::NahYeah)?
                     } else {
                         self.eat_identifier(c)?
@@ -303,8 +279,6 @@ impl<'a> Lexer<'a> {
         let mut s = String::from(first);
         let mut has_decimal = false;
 
-        // TODO: We don't check for whitespace or new line and semicolons are optional
-        // so this code is valid: "let x = 1.55let y = 1;"
         while let Some(peek) = self.peek() {
             if peek.is_digit(10) {
                 let _ = self.next();
@@ -370,26 +344,30 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        // // Space, new-line, or semi-colon must separate token
-        if !self.peek_separator() {
-            return Err(LexError::ExpectedCharacters(
-                vec![' ', '\n', ';'],
-                self.peek().unwrap_or_default(),
-                self.line,
-            )
-            .new());
-        }
+        // Space, new-line, or semi-colon must separate token
+        self.expect_separator()?;
 
         Ok(Kind::Ident(s))
     }
 
-    fn peek_separator(&mut self) -> bool {
-        match self.peek() {
+    fn expect_separator(&mut self) -> Result<()> {
+        let separated = match self.peek() {
             Some(' ' | '\n' | ';') => true,
             // EOF counts as delineator
             None => true,
             _ => false,
+        };
+
+        if separated {
+            return Ok(());
         }
+
+        return Err(LexError::ExpectedCharacters(
+            vec![' ', '\n', ';'],
+            self.peek().unwrap_or_default(),
+            self.line,
+        )
+        .new());
     }
 
     fn eat_whitespace(&mut self) {
@@ -423,6 +401,19 @@ impl<'a> Lexer<'a> {
         let res = self.src.peek().map(|&p| p);
         self.src.reset_peek();
         res
+    }
+
+    fn peek_is(&mut self, c: char) -> bool {
+        match self.peek() {
+            Some(ch) => {
+                if ch.to_ascii_lowercase().eq(&c) {
+                    true
+                } else {
+                    false
+                }
+            }
+            None => false,
+        }
     }
 
     /// Can be called multiple times to peek more than one
