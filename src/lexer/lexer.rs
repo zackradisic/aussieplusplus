@@ -144,14 +144,14 @@ impl<'a, T: Source> Lexer<T> {
                 }
                 'i' => {
                     if self.peek_is(' ') {
-                        self.eat_keyword_or_ident(c, Kind::IRecon)?
+                        self.eat_keyword_or_ident(c, Kind::IReckon)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
                 'y' => {
                     if self.peek_is('a') {
-                        self.eat_keyword_or_ident(c, Kind::YaRecon)?
+                        self.eat_keyword_or_ident(c, Kind::YaReckon)?
                     } else if self.peek_is('e') {
                         self.eat_keyword_or_ident(c, Kind::YeahNah)?
                     } else {

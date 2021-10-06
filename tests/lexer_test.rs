@@ -40,18 +40,18 @@ fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
 #[test]
 pub fn test_upside_down() {
     test_lexing_upside_down(
-        "ᄅƖ = z NOƆƎɹ I
-        ⅄ƎʞƆIq ʞOOHƆ
-        0Ɩ = ʎ NOƆƎɹ I
-        ϛ = x NOƆƎɹ I
+        "ᄅƖ = z NOʞƆƎɹ I        
+        ⅄ƎʞƆIq ʞOOHƆ        
+        0Ɩ = ʎ NOʞƆƎɹ I        
+        ϛ = x NOʞƆƎɹ I        
         Ǝ┴∀W ⅄ƎWI˥q",
         vec![
             Token::new(Kind::BlimeyMate, 1),
-            Token::new(Kind::IRecon, 2),
+            Token::new(Kind::IReckon, 2),
             Token::new(Kind::Ident("x".into()), 2),
             Token::new(Kind::Assign, 2),
             Token::new(Kind::Number(5f64), 2),
-            Token::new(Kind::IRecon, 3),
+            Token::new(Kind::IReckon, 3),
             Token::new(Kind::Ident("y".into()), 3),
             Token::new(Kind::Assign, 3),
             Token::new(Kind::Number(10f64), 3),
@@ -225,8 +225,8 @@ pub fn test_lex_keyword_casing() {
         Kind::ChookBickey,
         Kind::Walkabout,
         Kind::BlimeyMate,
-        Kind::IRecon,
-        Kind::YaRecon,
+        Kind::IReckon,
+        Kind::YaReckon,
         Kind::HardYakkaFor,
         Kind::Bail,
         Kind::YeahNah,
@@ -292,18 +292,18 @@ pub fn test_lex_hard_yakka() {
 pub fn test_lex_keywords() {
     test_lexing(
         "BLIMEY MATE
-        I RECON x = 5
-        I RECON y = 10
+        I RECKON x = 5
+        I RECKON y = 10
         CHOOK BICKEY
-        I RECON z = 12
+        I RECKON z = 12
         ",
         vec![
             Token::new(Kind::BlimeyMate, 1),
-            Token::new(Kind::IRecon, 2),
+            Token::new(Kind::IReckon, 2),
             Token::new(Kind::Ident("x".into()), 2),
             Token::new(Kind::Assign, 2),
             Token::new(Kind::Number(5f64), 2),
-            Token::new(Kind::IRecon, 3),
+            Token::new(Kind::IReckon, 3),
             Token::new(Kind::Ident("y".into()), 3),
             Token::new(Kind::Assign, 3),
             Token::new(Kind::Number(10f64), 3),
@@ -314,14 +314,14 @@ pub fn test_lex_keywords() {
 }
 
 #[test]
-fn test_lex_ya_recon() {
+fn test_lex_ya_reckon() {
     test_lexing(
-        "Ya recon x == 5 <
+        "Ya reckon x == 5 <
             bail Nah, yeah
         >
         bail Yeah, Nah",
         vec![
-            Token::new(Kind::YaRecon, 1),
+            Token::new(Kind::YaReckon, 1),
             Token::new(Kind::Ident("x".into()), 1),
             Token::new(Kind::Equals, 1),
             Token::new(Kind::Number(5f64), 1),
@@ -340,13 +340,13 @@ fn test_lex_ya_recon() {
 #[test]
 fn test_lex_walkabout() {
     test_lexing(
-        "WALKABOUT (I recon x = 0; x < 5; x = x + 1) <
+        "WALKABOUT (I reckon x = 0; x < 5; x = x + 1) <
             x = x + 1
         >",
         vec![
             Token::new(Kind::Walkabout, 1),
             Token::new(Kind::LeftParen, 1),
-            Token::new(Kind::IRecon, 1),
+            Token::new(Kind::IReckon, 1),
             Token::new(Kind::Ident("x".into()), 1),
             Token::new(Kind::Assign, 1),
             Token::new(Kind::Number(0f64), 1),

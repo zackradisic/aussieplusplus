@@ -6,17 +6,17 @@ Programming language from down under, inspired by [this](https://www.reddit.com/
 * Boomerangs (angle-brackets) instead of curly braces
 * Pattern matching
 * `NAH, YEAH == true` and `YEAH, NAH == false`
-* Declare variables with `I RECON x = 420`
+* Declare variables with `I RECKON x = 420`
 * Other Aussie keywords, CAPITALIZATION is encouraged but not required
 
 ## Example
 ```javascript
 BLIMEY MATE
 
-I RECON x = 5;
-I RECON y = 10;
+I RECKON x = 5;
+I RECKON y = 10;
 
-YA RECON x == y - 5 <
+YA RECKON x == y - 5 <
 	// Pattern matching
 	NAH, YEAH? <
 		bail "dinkum"
@@ -29,10 +29,10 @@ YA RECON x == y - 5 <
 // Declaring a function
 HARD YAKKA FOR fibonacci ( x ) <
 		// If statements
-		YA RECON x == 0 <
+		YA RECKON x == 0 <
 				bail 0
 		>
-		YA RECON x == 1 <
+		YA RECKON x == 1 <
 				bail 1
 		>
 

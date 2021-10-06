@@ -41,8 +41,8 @@ pub enum Kind {
     ChookBickey,    // Chook bickey (end of program)
     Walkabout,      // Walkabout (for loop)
     BlimeyMate,     // Blimey mate (program start)
-    IRecon,         // I recon (var decl)
-    YaRecon,        // Ya recon (analogous to if)
+    IReckon,         // I reckon (var decl)
+    YaReckon,        // Ya reckon (analogous to if)
     HardYakkaFor,   // Hard yakka for (function decl)
     Bail,           // bail (return)
     NahYeah,        // true
@@ -77,8 +77,8 @@ impl Kind {
             Kind::ChookBickey => "chook bickey", // Chook bickey (end of program)
             Kind::Walkabout => "walkabout",      // Walkabout (for loop)
             Kind::BlimeyMate => "blimey mate",   // Blimey mate (program start)
-            Kind::IRecon => "i recon",           // I recon (var decl)
-            Kind::YaRecon => "ya recon",         // Ya recon (analogous to if)
+            Kind::IReckon => "i reckon",           // I reckon (var decl)
+            Kind::YaReckon => "ya reckon",         // Ya reckon (analogous to if)
             Kind::HardYakkaFor => "hard yakka for", // Hard yakka for (function decl)
             Kind::Bail => "bail",                // bail (return)
             Kind::NahYeah => "nah, yeah",        // true
