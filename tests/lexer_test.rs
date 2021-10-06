@@ -231,6 +231,7 @@ pub fn test_lex_keyword_casing() {
         Kind::Bail,
         Kind::YeahNah,
         Kind::NahYeah,
+        Kind::BuggerAll,
     ];
 
     fn test_random_case(kind: &Kind, iterations: usize) {

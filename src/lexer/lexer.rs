@@ -50,6 +50,8 @@ impl<'a, T: Source> Lexer<T> {
         };
 
         let kind: Kind = match ch {
+            '~' => Kind::Tilde,
+            '?' => Kind::QuestionMark,
             '(' => Kind::LeftParen,
             ')' => Kind::RightParen,
             ',' => Kind::Comma,
@@ -138,6 +140,8 @@ impl<'a, T: Source> Lexer<T> {
                         self.eat_keyword_or_ident(c, Kind::BlimeyMate)?
                     } else if self.peek_is('a') {
                         self.eat_keyword_or_ident(c, Kind::Bail)?
+                    } else if self.peek_is('u') {
+                        self.eat_keyword_or_ident(c, Kind::BuggerAll)?
                     } else {
                         self.eat_identifier(c)?
                     }
@@ -145,6 +149,8 @@ impl<'a, T: Source> Lexer<T> {
                 'i' => {
                     if self.peek_is(' ') {
                         self.eat_keyword_or_ident(c, Kind::IReckon)?
+                    } else if self.peek_is('s') {
+                        self.eat_keyword_or_ident(c, Kind::Isa)?
                     } else {
                         self.eat_identifier(c)?
                     }
