@@ -89,3 +89,21 @@ fn test_match() {
         "42069",
     );
 }
+
+#[test]
+fn test_ops() {
+    test_code("gimme 5 + 2", "7");
+    test_code("gimme 5 - 2", "3");
+    test_code("gimme 5 * 2", "10");
+    test_code("gimme 5 / 2", "2.5");
+    test_code("gimme 5 > 2", "Nah, yeah");
+    test_code("gimme 5 >= 2", "Nah, yeah");
+    test_code("gimme 5 < 2", "Yeah, nah");
+    test_code("gimme 5 <= 2", "Yeah, nah");
+    test_code("gimme 5 == 2", "Yeah, nah");
+    test_code("gimme 5 != 2", "Nah, yeah");
+
+    test_code("gimme ((5 + 5) / 2) * 2", "10");
+
+    test_code("gimme 5 + 5 * 2 / 2", "10");
+}

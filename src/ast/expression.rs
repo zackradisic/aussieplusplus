@@ -29,6 +29,7 @@ impl ExprNode {
 pub enum Expr {
     Unary(UnaryOp, Box<ExprNode>),
     Binary(Box<ExprNode>, BinaryOp, Box<ExprNode>),
+    Grouping(Box<ExprNode>),
     Literal(Value),
     Var(Var),
 }

@@ -263,6 +263,30 @@ fn test_parse_binary_op() {
         );
     });
 
+    test_parse("1 + (2 + 3)", |stmts| {
+        assert_eq!(
+            stmts[0],
+            Stmt::Expr(ExprNode::new(
+                Expr::Binary(
+                    Box::new(ExprNode::new(Expr::Literal(1.into()), 1)),
+                    BinaryOp::Plus,
+                    Box::new(ExprNode::new(
+                        Expr::Grouping(Box::new(ExprNode::new(
+                            Expr::Binary(
+                                Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
+                                BinaryOp::Plus,
+                                Box::new(ExprNode::new(Expr::Literal(3.into()), 1)),
+                            ),
+                            1,
+                        ))),
+                        1
+                    ))
+                ),
+                1
+            ))
+        );
+    });
+
     test_parse("1 + 2 + 3", |stmts| {
         assert_eq!(
             stmts[0],

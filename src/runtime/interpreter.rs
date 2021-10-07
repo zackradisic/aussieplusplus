@@ -211,7 +211,7 @@ impl<'a> Interpreter<'a> {
                 .get(&var.ident().name())
                 .map_or_else(|| Value::Nil, |v| v)),
             Expr::Literal(ref val) => Ok(val.clone()),
-            // Expr::Grouping(ref expr) => self.evaluate(expr),
+            Expr::Grouping(ref expr) => self.evaluate(expr),
             Expr::Unary(op, ref expr) => {
                 let right = self.evaluate(expr)?;
 

@@ -322,13 +322,11 @@ impl Parser {
             Kind::YeahNah => Expr::Literal(false.into()),
             Kind::BuggerAll => Expr::Literal(Value::Nil),
             Kind::Ident(name) => Expr::Var(Var::new(Ident::new(name, line))),
-            // Kind::LeftParen => {
-            //     let line = self.peek().line();
-            //     // let expr = self.expression()?;
-            //     // self.consume(TokenType::RightParen)?;
-            //     // Expr::Grouping(Box::new(expr))
-            //     Ok(ExprNode::new(expr, line))
-            // }
+            Kind::LeftParen => {
+                let expr = self.expression()?;
+                self.consume(Kind::RightParen)?;
+                Expr::Grouping(Box::new(expr))
+            }
             k => {
                 // self.current -= 1;
                 // panic!("k: {:?}", k);
