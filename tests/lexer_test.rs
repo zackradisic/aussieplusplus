@@ -222,6 +222,8 @@ pub fn test_separation() {
 #[test]
 pub fn test_lex_keyword_casing() {
     let kinds = vec![
+        Kind::Gimme,
+        Kind::Isa,
         Kind::ChookBickey,
         Kind::Walkabout,
         Kind::BlimeyMate,

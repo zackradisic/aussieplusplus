@@ -16,4 +16,6 @@ pub enum ParseError {
     InvalidAssigment(Token),
     #[error("[line {0}] too many function arguments (max 255)")]
     TooManyArguments(usize),
+    #[error("[line {0}] too many default branches in match statement")]
+    TooManyMatchDefaultBranches(usize),
 }

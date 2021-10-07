@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Token {
-    kind: Kind,
+    pub kind: Kind,
     line: usize,
 }
 
@@ -42,6 +42,7 @@ pub enum Kind {
     BangEqual,      // !=
     And,            // &&
     Or,             // ||
+    Gimme,          // gimme
     Isa,            // (is a)
     BuggerAll,      // Bugger all (nil/null)
     ChookBickey,    // Chook bickey (end of program)
@@ -83,6 +84,7 @@ impl Kind {
             Kind::BangEqual => "!=",
             Kind::And => "&&",
             Kind::Or => "||",
+            Kind::Gimme => "gimme",
             Kind::BuggerAll => "bugger all",
             Kind::ChookBickey => "chook bickey", // Chook bickey (end of program)
             Kind::Walkabout => "walkabout",      // Walkabout (for loop)

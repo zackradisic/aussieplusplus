@@ -1,5 +1,5 @@
 use aussie_plus_plus::{
-    ast::{BinaryOp, Expr, ExprNode, Ident, MatchBody, MatchBranch, Pattern, Stmt, UnaryOp},
+    ast::{BinaryOp, Expr, ExprNode, Ident, Match, MatchBranch, Pattern, Stmt, UnaryOp},
     lexer::{lexer, source},
     parser::parser,
     runtime::Value,
@@ -22,7 +22,7 @@ where
 fn test_parse_match() {
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all
+                    Nah, yeah ~ Bugger all,
                     Yeah, nah ~ 1
                 >",
         |stmts| {
@@ -40,7 +40,7 @@ fn test_parse_match() {
                         let pat: Option<Pattern> = Kind::NahYeah.into();
                         pat.unwrap()
                     },
-                    MatchBody::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2)),
+                    vec![Stmt::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2))],
                     2,
                 ),
                 MatchBranch::new(
@@ -48,11 +48,11 @@ fn test_parse_match() {
                         let pat: Option<Pattern> = Kind::YeahNah.into();
                         pat.unwrap()
                     },
-                    MatchBody::Expr(ExprNode::new(Expr::Literal(1.into()), 3)),
+                    vec![Stmt::Expr(ExprNode::new(Expr::Literal(1.into()), 3))],
                     3,
                 ),
             ];
-            assert_eq!(stmts[0], Stmt::Match(cond, branches));
+            assert_eq!(stmts[0], Stmt::Match(Match::new(cond, branches, None)));
         },
     );
 }
@@ -80,6 +80,42 @@ fn test_parse_block() {
             assert_eq!(stmts[0], Stmt::If(cond, block),);
         },
     );
+
+    test_parse(
+        "ya reckon x == 2 is a <
+                    Nah, yeah ~ Bugger all,
+                    Yeah, nah ~ 1
+                >",
+        |stmts| {
+            let cond = ExprNode::new(
+                Expr::Binary(
+                    Box::new(ExprNode::new(Expr::Var(("x", 1).into()), 1)),
+                    BinaryOp::Equal,
+                    Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
+                ),
+                1,
+            );
+            let branches = vec![
+                MatchBranch::new(
+                    {
+                        let pat: Option<Pattern> = Kind::NahYeah.into();
+                        pat.unwrap()
+                    },
+                    vec![Stmt::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2))],
+                    2,
+                ),
+                MatchBranch::new(
+                    {
+                        let pat: Option<Pattern> = Kind::YeahNah.into();
+                        pat.unwrap()
+                    },
+                    vec![Stmt::Expr(ExprNode::new(Expr::Literal(1.into()), 3))],
+                    3,
+                ),
+            ];
+            assert_eq!(stmts[0], Stmt::Match(Match::new(cond, branches, None)));
+        },
+    );
 }
 
 #[test]
@@ -91,7 +127,7 @@ fn test_parse_var() {
             assert_eq!(
                 stmts[0],
                 Stmt::VarDecl(
-                    ("x", 2).into(),
+                    ("x", 1).into(),
                     Some(ExprNode::new(Expr::Literal(2.into()), 1))
                 )
             );

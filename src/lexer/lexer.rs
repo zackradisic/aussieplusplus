@@ -121,6 +121,13 @@ impl<'a, T: Source> Lexer<T> {
                 }
             }
             c => match c.to_ascii_lowercase() {
+                'g' => {
+                    if self.peek_is('i') {
+                        self.eat_keyword_or_ident(c, Kind::Gimme)?
+                    } else {
+                        self.eat_identifier(c)?
+                    }
+                }
                 'c' => {
                     if self.peek_is('h') {
                         self.eat_keyword_or_ident(c, Kind::ChookBickey)?
@@ -271,7 +278,7 @@ impl<'a, T: Source> Lexer<T> {
 
     fn expect_separator(&mut self) -> Result<()> {
         let separated = match self.peek() {
-            Some(' ' | '\n' | ';') => true,
+            Some(' ' | '\n' | ';' | ',') => true,
             // EOF counts as delineator
             None => true,
             _ => false,
@@ -282,7 +289,7 @@ impl<'a, T: Source> Lexer<T> {
         }
 
         return Err(LexError::ExpectedCharacters(
-            vec![' ', '\n', ';'],
+            vec![' ', '\n', ';', ','],
             self.peek().unwrap_or_default(),
             self.line,
         )

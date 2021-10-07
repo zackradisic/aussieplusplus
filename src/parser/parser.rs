@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::ast::{Ident, MatchBody, MatchBranch, Pattern, Stmt, Var};
+use crate::ast::{Ident, Match, MatchBranch, Pattern, Stmt, Var};
 use crate::runtime::Value;
 use crate::{
     ast::{BinaryOp, Expr, ExprNode, UnaryOp},
@@ -43,7 +43,7 @@ impl Parser {
                     println!("Got: {:?}", stmt);
                     stmts.push(stmt);
                 }
-                Err(e) => eprintln!("err: {:?}", e),
+                Err(e) => eprintln!("{:?}", e),
             }
         }
 
@@ -82,7 +82,8 @@ impl Parser {
         match_toks!(self,
             _ => self.expression_statement(),
             Kind::LeftBoomerang => self.block_statement(),
-            Kind::YaReckon => self.condition_statement()
+            Kind::YaReckon => self.condition_statement(),
+            Kind::Gimme => self.print_statement()
         )
     }
 
@@ -112,9 +113,9 @@ impl Parser {
             Kind::Isa => {
                 self.consume(Kind::Isa)?;
                 self.consume(Kind::LeftBoomerang)?;
-                let branches = self.match_branches()?;
+                let (branches, default) = self.match_branches()?;
 
-                Ok(Stmt::Match(cond, branches))
+                Ok(Stmt::Match(Match::new(cond, branches, default)))
             }
             other => {
                 Err(
@@ -125,12 +126,17 @@ impl Parser {
         }
     }
 
-    fn match_branches(&mut self) -> Result<Vec<MatchBranch>> {
+    fn print_statement(&mut self) -> Result<Stmt> {
+        Ok(Stmt::Print(self.expression()?))
+    }
+
+    fn match_branches(&mut self) -> Result<(Vec<MatchBranch>, Option<MatchBranch>)> {
         let mut vec: Vec<MatchBranch> = Vec::new();
+        let mut default: Option<MatchBranch> = None;
 
         while !self.match_tok(Kind::RightBoomerang) {
             let peek = self.peek();
-            let val: Option<Pattern> = peek.kind().into();
+            let val: Option<Pattern> = peek.clone().into();
             let val = if val.is_none() {
                 return Err(ParseError::ExpectedTokens(
                     vec![
@@ -152,16 +158,23 @@ impl Parser {
 
             self.consume(Kind::Tilde)?;
 
-            let body: Option<MatchBody> = if self.match_tok(Kind::LeftBoomerang) {
-                self.block_statement()?.into()
-            } else {
-                self.expression_statement()?.into()
-            };
+            let body: Vec<Stmt> = self.statement()?.into();
+            println!("match body: {:?}", body);
 
-            vec.push(MatchBranch::new(val, body.unwrap(), peek.line()))
+            let branch = MatchBranch::new(val.clone(), body, peek.line());
+            if let Pattern::Var(_) = val {
+                if default.is_some() {
+                    return Err(ParseError::TooManyMatchDefaultBranches(branch.line()).into());
+                }
+                default = Some(branch)
+            } else {
+                vec.push(branch)
+            }
+
+            self.match_tok(Kind::Comma);
         }
 
-        Ok(vec)
+        Ok((vec, default))
     }
 
     // fn if_statement(&mut self) -> Result<Stmt> {
@@ -170,7 +183,19 @@ impl Parser {
     fn expression_statement(&mut self) -> Result<Stmt> {
         let expr = self.expression()?;
 
-        Ok(Stmt::Expr(expr))
+        if self.match_tok(Kind::Semicolon) {
+            return Ok(Stmt::Expr(expr));
+        }
+
+        match &self.peek().kind {
+            Kind::EOF | Kind::Comma | Kind::RightBoomerang => Ok(Stmt::Expr(expr)),
+            k => Err(ParseError::ExpectedTokens(
+                vec![Kind::Semicolon, Kind::Comma, Kind::RightBoomerang],
+                k.clone(),
+                expr.line(),
+            )
+            .into()),
+        }
     }
 
     fn expression(&mut self) -> Result<ExprNode> {
@@ -305,7 +330,7 @@ impl Parser {
             //     Ok(ExprNode::new(expr, line))
             // }
             k => {
-                self.current -= 1;
+                // self.current -= 1;
                 // panic!("k: {:?}", k);
                 return Err(ParseError::ExpectedTokens(
                     vec![

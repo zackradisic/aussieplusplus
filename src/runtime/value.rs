@@ -1,9 +1,44 @@
+use std::fmt::Display;
+
+use crate::token::Kind;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     String(String),
     Number(f64),
     Bool(bool),
     Nil,
+}
+
+impl From<Value> for String {
+    fn from(val: Value) -> Self {
+        match val {
+            Value::Bool(b) => {
+                if b {
+                    "Nah, yeah".into()
+                } else {
+                    "Yeah, nah".into()
+                }
+            }
+            Value::Nil => format!("{}", Kind::BuggerAll),
+            Value::Number(n) => format!("{}", n),
+            Value::String(s) => s.clone(),
+        }
+    }
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s: String = self.clone().into();
+        write!(f, "{}", s)
+    }
+}
+
+impl From<&str> for Value {
+    fn from(s: &str) -> Self {
+        let s: String = s.into();
+        s.into()
+    }
 }
 
 impl From<String> for Value {

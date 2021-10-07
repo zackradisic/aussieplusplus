@@ -19,6 +19,10 @@ impl ExprNode {
     pub fn line(&self) -> usize {
         self.line
     }
+
+    pub fn expr(&self) -> &Expr {
+        &self.expr
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

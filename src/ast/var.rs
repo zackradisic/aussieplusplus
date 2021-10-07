@@ -7,6 +7,14 @@ impl Var {
     pub fn new(ident: Ident) -> Self {
         Self { ident }
     }
+
+    pub fn ident(&self) -> Ident {
+        self.ident.clone()
+    }
+
+    pub fn name(&self) -> String {
+        self.ident.name()
+    }
 }
 
 impl From<(String, usize)> for Var {

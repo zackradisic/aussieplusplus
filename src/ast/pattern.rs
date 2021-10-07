@@ -1,17 +1,41 @@
-use crate::token::Kind;
+use crate::{
+    runtime::{RuntimePartialEq, Value},
+    token::{Kind, Token},
+};
 
-use super::{ExprNode, Stmt, Var};
+use super::{ExprNode, Ident, Stmt, Var};
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Match {
+    pub val: ExprNode,
+    pub branches: Vec<MatchBranch>,
+    pub default: Option<MatchBranch>,
+}
+
+impl Match {
+    pub fn new(val: ExprNode, branches: Vec<MatchBranch>, default: Option<MatchBranch>) -> Match {
+        Match {
+            val,
+            branches,
+            default,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MatchBranch {
-    pat: Pattern,
-    body: MatchBody,
+    pub pat: Pattern,
+    pub body: Vec<Stmt>,
     line: usize,
 }
 
 impl MatchBranch {
-    pub fn new(pat: Pattern, body: MatchBody, line: usize) -> Self {
+    pub fn new(pat: Pattern, body: Vec<Stmt>, line: usize) -> Self {
         Self { pat, body, line }
+    }
+
+    pub fn line(&self) -> usize {
+        self.line
     }
 }
 
@@ -24,30 +48,48 @@ pub enum Pattern {
     Nil,
 }
 
+impl RuntimePartialEq<Value> for Pattern {
+    fn runtime_eq(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Self::String(l), Value::String(r)) => l == r,
+            (Self::Number(l), Value::Number(r)) => l == r,
+            (Self::Bool(l), Value::Bool(r)) => l == r,
+            (Self::Nil, Value::Nil) => true,
+            _ => false,
+        }
+    }
+
+    fn runtime_ne(&self, other: &Value) -> bool {
+        !self.runtime_eq(other)
+    }
+}
+
 impl From<Kind> for Option<Pattern> {
     fn from(kind: Kind) -> Self {
-        match kind {
-            Kind::Number(n) => Some(Pattern::Number(n)),
-            Kind::String(s) => Some(Pattern::String(s)),
+        match &kind {
+            Kind::Number(n) => Some(Pattern::Number(*n)),
+            Kind::String(s) => Some(Pattern::String(s.clone())),
             Kind::NahYeah => Some(Pattern::Bool(true)),
             Kind::YeahNah => Some(Pattern::Bool(false)),
             Kind::BuggerAll => Some(Pattern::Nil),
+            Kind::Ident(ident) => Some(Pattern::Var(Var::new(Ident::new(ident.clone(), 0)))),
             _ => None,
         }
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum MatchBody {
-    Expr(ExprNode),
-    Block(Vec<Stmt>),
-}
-
-impl From<Stmt> for Option<MatchBody> {
-    fn from(s: Stmt) -> Self {
-        match s {
-            Stmt::Block(stmts) => Some(MatchBody::Block(stmts)),
-            Stmt::Expr(expr) => Some(MatchBody::Expr(expr)),
+impl From<Token> for Option<Pattern> {
+    fn from(tok: Token) -> Self {
+        match &tok.kind {
+            Kind::Number(n) => Some(Pattern::Number(*n)),
+            Kind::String(s) => Some(Pattern::String(s.clone())),
+            Kind::NahYeah => Some(Pattern::Bool(true)),
+            Kind::YeahNah => Some(Pattern::Bool(false)),
+            Kind::BuggerAll => Some(Pattern::Nil),
+            Kind::Ident(ident) => Some(Pattern::Var(Var::new(Ident::new(
+                ident.clone(),
+                tok.line(),
+            )))),
             _ => None,
         }
     }
