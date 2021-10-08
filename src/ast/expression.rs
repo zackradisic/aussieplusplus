@@ -32,4 +32,5 @@ pub enum Expr {
     Grouping(Box<ExprNode>),
     Literal(Value),
     Var(Var),
+    Assign(Var, Box<ExprNode>),
 }

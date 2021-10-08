@@ -32,13 +32,48 @@ fn test_code(src: &str, expected: &str) {
 }
 
 #[test]
+fn test_vars() {
+    test_code(
+        "
+    I RECKON x = 10;
+    gimme x;
+    x = 5;
+    gimme x;
+    ",
+        "10\n5",
+    );
+
+    test_code(
+        "I RECKON x = 10;
+    <
+        I RECKON x = 5;
+        gimme x;
+    >
+    gimme x;
+    ",
+        "5\n10",
+    );
+
+    test_code(
+        "I RECKON x = 10;
+    <
+        x = 5;
+        gimme x;
+    >
+    gimme x;
+    ",
+        "5\n5",
+    );
+}
+
+#[test]
 fn test_match() {
     // Works with bools
     test_code(
         "i reckon x = 2;
         ya reckon x == 2 is a <
-                    Nah, yeah ~ gimme \"FARK\",
-                    Yeah, nah ~ gimme f,
+                    Nah, yeah ~ gimme \"FARK\";
+                    Yeah, nah ~ gimme f;
                 >",
         "FARK",
     );
@@ -47,11 +82,11 @@ fn test_match() {
     test_code(
         "i reckon x = 420;
         ya reckon x is a <
-                    1 ~ gimme \"FARK\",
-                    2 ~ gimme \"CARN\",
-                    420 ~ gimme \"FAIR DINKUM\",
+                    1 ~ gimme \"FARK\";
+                    2 ~ gimme \"CARN\";
+                    420 ~ gimme \"FAIR DINKUM\";
                 >
-                gimme x",
+                gimme x;",
         "FAIR DINKUM\n420",
     );
 
@@ -59,8 +94,8 @@ fn test_match() {
     test_code(
         "i reckon x = \"G'day mate\";
         ya reckon x is a <
-            \"Strewth!\" ~ gimme \"Strewth!\",
-            \"G'day mate\" ~ gimme \"G'day mate\"
+            \"Strewth!\" ~ gimme \"Strewth!\";
+            \"G'day mate\" ~ gimme \"G'day mate\";
         >
         ",
         "G'day mate",
@@ -70,8 +105,8 @@ fn test_match() {
     test_code(
         "i reckon x = BUGGER ALL;
         ya reckon x is a <
-            BuGGEr ALL ~ gimme bugger all,
-            somethinElse ~ gimme somethinElse
+            BuGGEr ALL ~ gimme bugger all;
+            somethinElse ~ gimme somethinElse;
         >
         ",
         "bugger all",
@@ -81,9 +116,9 @@ fn test_match() {
     test_code(
         "i reckon x = 42069;
         ya reckon x is a <
-            1 ~ gimme \"fark!\",
-            1 ~ gimme \"carn!\",
-            somethinElse ~ gimme somethinElse
+            1 ~ gimme \"fark!\";
+            1 ~ gimme \"carn!\";
+            somethinElse ~ gimme somethinElse;
         >
         ",
         "42069",
@@ -92,18 +127,18 @@ fn test_match() {
 
 #[test]
 fn test_ops() {
-    test_code("gimme 5 + 2", "7");
-    test_code("gimme 5 - 2", "3");
-    test_code("gimme 5 * 2", "10");
-    test_code("gimme 5 / 2", "2.5");
-    test_code("gimme 5 > 2", "Nah, yeah");
-    test_code("gimme 5 >= 2", "Nah, yeah");
-    test_code("gimme 5 < 2", "Yeah, nah");
-    test_code("gimme 5 <= 2", "Yeah, nah");
-    test_code("gimme 5 == 2", "Yeah, nah");
-    test_code("gimme 5 != 2", "Nah, yeah");
+    test_code("gimme 5 + 2;", "7");
+    test_code("gimme 5 - 2;", "3");
+    test_code("gimme 5 * 2;", "10");
+    test_code("gimme 5 / 2;", "2.5");
+    test_code("gimme 5 > 2;", "Nah, yeah");
+    test_code("gimme 5 >= 2;", "Nah, yeah");
+    test_code("gimme 5 < 2;", "Yeah, nah");
+    test_code("gimme 5 <= 2;", "Yeah, nah");
+    test_code("gimme 5 == 2;", "Yeah, nah");
+    test_code("gimme 5 != 2;", "Nah, yeah");
 
-    test_code("gimme ((5 + 5) / 2) * 2", "10");
+    test_code("gimme ((5 + 5) / 2) * 2;", "10");
 
-    test_code("gimme 5 + 5 * 2 / 2", "10");
+    test_code("gimme 5 + 5 * 2 / 2;", "10");
 }

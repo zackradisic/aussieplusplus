@@ -131,6 +131,7 @@ impl<'a> Interpreter<'a> {
     }
 
     fn execute_block(&mut self, stmts: &Vec<Stmt>, env: Environment) -> Result<Exit> {
+        println!("Executing block");
         let previous = self.env.clone();
         self.env = Rc::new(RefCell::new(env));
 
@@ -198,13 +199,11 @@ impl<'a> Interpreter<'a> {
             //         }
             //     }
             // },
-            // Expr::Assign(ref var, ref expr) => {
-            //     let value = self.evaluate(expr)?;
-            //     self.env
-            //         .borrow_mut()
-            //         .assign(var.identifier.name.clone(), value.clone());
-            //     Ok(value)
-            // }
+            Expr::Assign(ref var, ref expr) => {
+                let value = self.evaluate(expr)?;
+                self.env.borrow_mut().assign(var.name(), value.clone());
+                Ok(value)
+            }
             Expr::Var(ref var) => Ok(self
                 .env
                 .borrow()

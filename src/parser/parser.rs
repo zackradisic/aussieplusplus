@@ -127,7 +127,11 @@ impl Parser {
     }
 
     fn print_statement(&mut self) -> Result<Stmt> {
-        Ok(Stmt::Print(self.expression()?))
+        let stmt = Stmt::Print(self.expression()?);
+
+        self.consume(Kind::Semicolon)?;
+
+        Ok(stmt)
     }
 
     fn match_branches(&mut self) -> Result<(Vec<MatchBranch>, Option<MatchBranch>)> {
@@ -170,8 +174,6 @@ impl Parser {
             } else {
                 vec.push(branch)
             }
-
-            self.match_tok(Kind::Comma);
         }
 
         Ok((vec, default))
@@ -183,23 +185,31 @@ impl Parser {
     fn expression_statement(&mut self) -> Result<Stmt> {
         let expr = self.expression()?;
 
-        if self.match_tok(Kind::Semicolon) {
-            return Ok(Stmt::Expr(expr));
-        }
+        self.consume(Kind::Semicolon)?;
 
-        match &self.peek().kind {
-            Kind::EOF | Kind::Comma | Kind::RightBoomerang => Ok(Stmt::Expr(expr)),
-            k => Err(ParseError::ExpectedTokens(
-                vec![Kind::Semicolon, Kind::Comma, Kind::RightBoomerang],
-                k.clone(),
-                expr.line(),
-            )
-            .into()),
-        }
+        Ok(Stmt::Expr(expr))
     }
 
     fn expression(&mut self) -> Result<ExprNode> {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<ExprNode> {
+        let expr = self.equality()?;
+        match self.peek().kind {
+            Kind::Assign => {
+                let equals = self.advance();
+                let initializer = self.expression()?;
+
+                if let Expr::Var(v) = expr.expr() {
+                    let assign = Expr::Assign(v.clone(), Box::new(initializer));
+                    return Ok(ExprNode::new(assign, expr.line()));
+                }
+
+                Err(ParseError::InvalidAssigment(equals).into())
+            }
+            _ => Ok(expr),
+        }
     }
 
     fn equality(&mut self) -> Result<ExprNode> {

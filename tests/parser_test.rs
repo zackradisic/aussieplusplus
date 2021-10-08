@@ -1,5 +1,5 @@
 use aussie_plus_plus::{
-    ast::{BinaryOp, Expr, ExprNode, Ident, Match, MatchBranch, Pattern, Stmt, UnaryOp},
+    ast::{BinaryOp, Expr, ExprNode, Ident, Match, MatchBranch, Pattern, Stmt, UnaryOp, Var},
     lexer::{lexer, source},
     parser::parser,
     runtime::Value,
@@ -19,11 +19,54 @@ where
 }
 
 #[test]
+fn test_parse_assign() {
+    test_parse(
+        "i reckon x = 5;
+    x = 10;
+    ",
+        |stmts| {
+            assert_eq!(
+                stmts[1],
+                Stmt::Expr(ExprNode::new(
+                    Expr::Assign(
+                        Var::new(("x", 2).into()),
+                        Box::new(ExprNode::new(Expr::Literal(10.into()), 2))
+                    ),
+                    2
+                ))
+            )
+        },
+    );
+
+    test_parse(
+        "
+        i reckon x = 5;
+        i reckon y = x = 10;
+        ",
+        |stmts| {
+            assert_eq!(
+                stmts[1],
+                Stmt::VarDecl(
+                    ("y", 3).into(),
+                    Some(ExprNode::new(
+                        Expr::Assign(
+                            Var::new(("x", 3).into()),
+                            Box::new(ExprNode::new(Expr::Literal(10.into()), 3)),
+                        ),
+                        3,
+                    ))
+                )
+            );
+        },
+    );
+}
+
+#[test]
 fn test_parse_match() {
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all,
-                    Yeah, nah ~ 1
+                    Nah, yeah ~ Bugger all;
+                    Yeah, nah ~ 1;
                 >",
         |stmts| {
             let cond = ExprNode::new(
@@ -83,8 +126,8 @@ fn test_parse_block() {
 
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all,
-                    Yeah, nah ~ 1
+                    Nah, yeah ~ Bugger all;
+                    Yeah, nah ~ 1;
                 >",
         |stmts| {
             let cond = ExprNode::new(
@@ -155,7 +198,7 @@ fn test_parse_var() {
 
 #[test]
 fn test_parse_if() {
-    test_parse("ya reckon 5 == 2 ? nah, yeah", |stmts| {
+    test_parse("ya reckon 5 == 2 ? nah, yeah;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::If(
@@ -175,7 +218,7 @@ fn test_parse_if() {
 
 #[test]
 fn test_parse_unary_op() {
-    test_parse("!1", |stmts| {
+    test_parse("!1;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -188,7 +231,7 @@ fn test_parse_unary_op() {
         );
     });
 
-    test_parse("!!1", |stmts| {
+    test_parse("!!1;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -207,7 +250,7 @@ fn test_parse_unary_op() {
         );
     });
 
-    test_parse("!!!1", |stmts| {
+    test_parse("!!!1;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -235,7 +278,7 @@ fn test_parse_unary_op() {
 
 #[test]
 fn test_parse_binary_op() {
-    test_parse("1 + 2 + 3 + 4", |stmts| {
+    test_parse("1 + 2 + 3 + 4;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -263,7 +306,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 + (2 + 3)", |stmts| {
+    test_parse("1 + (2 + 3);", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -287,7 +330,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 + 2 + 3", |stmts| {
+    test_parse("1 + 2 + 3;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -308,7 +351,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 + 2", |stmts| {
+    test_parse("1 + 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -322,7 +365,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 - 2", |stmts| {
+    test_parse("1 - 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -336,7 +379,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 / 2", |stmts| {
+    test_parse("1 / 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -350,7 +393,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 * 2", |stmts| {
+    test_parse("1 * 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -364,7 +407,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 == 2", |stmts| {
+    test_parse("1 == 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -378,7 +421,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 != 2", |stmts| {
+    test_parse("1 != 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -392,7 +435,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 > 2", |stmts| {
+    test_parse("1 > 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -406,7 +449,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 >= 2", |stmts| {
+    test_parse("1 >= 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -420,7 +463,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 < 2", |stmts| {
+    test_parse("1 < 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
@@ -434,7 +477,7 @@ fn test_parse_binary_op() {
         );
     });
 
-    test_parse("1 <= 2", |stmts| {
+    test_parse("1 <= 2;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::Expr(ExprNode::new(
