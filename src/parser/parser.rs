@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::ast::{Ident, Match, MatchBranch, Pattern, Stmt, Var};
+use crate::ast::{ForLoop, Ident, Match, MatchBranch, Pattern, RangeBound, Stmt, Var};
 use crate::runtime::Value;
 use crate::{
     ast::{BinaryOp, Expr, ExprNode, UnaryOp},
@@ -74,7 +74,58 @@ impl Parser {
                 let initializer = self.expression()?;
                 self.consume(Kind::Semicolon)?;
                 Ok(Stmt::VarDecl(ident, Some(initializer)))
+            },
+            Kind::Isa => {
+                self.consume(Kind::Walkabout)?;
+                self.loops(ident)
             }
+        )
+    }
+
+    fn loops(&mut self, ident: Ident) -> Result<Stmt> {
+        match_toks!(self,
+            other => {
+                todo!()
+            },
+            Kind::From => {
+                let start = match_toks!(self,
+                    k =>
+                    return Err(ParseError::ExpectedTokens(
+                        vec![Kind::LeftParen, Kind::LeftBracket],
+                        k,
+                        ident.line(),
+                    ).into()),
+                    Kind::LeftParen => {
+                        RangeBound::Exclusive(self.expression()?)
+                    },
+                    Kind::LeftBracket => {
+                        RangeBound::Inclusive(self.expression()?)
+                    }
+                );
+                self.consume(Kind::To)?;
+                let end = {
+                    let expr = self.expression()?;
+                    match_toks!(self,
+                        k =>
+                        return Err(ParseError::ExpectedTokens(
+                            vec![Kind::RightParen, Kind::RightBracket],
+                            k,
+                            ident.line(),
+                        ).into()),
+                        Kind::RightParen => {
+                            RangeBound::Exclusive(expr)
+                        },
+                        Kind::RightBracket => {
+                            RangeBound::Inclusive(expr)
+                        }
+                    )
+                };
+
+                let body = self.statement()?;
+
+                Ok(Stmt::For(Box::new(ForLoop::new(ident.into(), (start, end), vec![body]))))
+            },
+            Kind::Until => todo!()
         )
     }
 
@@ -163,7 +214,6 @@ impl Parser {
             self.consume(Kind::Tilde)?;
 
             let body: Vec<Stmt> = self.statement()?.into();
-            println!("match body: {:?}", body);
 
             let branch = MatchBranch::new(val.clone(), body, peek.line());
             if let Pattern::Var(_) = val {
@@ -240,22 +290,10 @@ impl Parser {
             Kind::RightBoomerang | Kind::GTE | Kind::LeftBoomerang | Kind::LTE => true,
             _ => false,
         } {
-            let pos = self.current;
             let kind = self.advance().kind();
             let op: Option<BinaryOp> = kind.clone().into();
 
-            let right = match self.term() {
-                Ok(right) => right,
-                Err(e) => match kind {
-                    // If parsing rest of expression failed then assume RightBoomerang
-                    // is used as block delimiter and return what we have so far.
-                    Kind::RightBoomerang => {
-                        self.back(pos);
-                        return Ok(left);
-                    }
-                    _ => return Err(e),
-                },
-            };
+            let right = self.term()?;
 
             left = ExprNode::new(
                 Expr::Binary(Box::new(left), op.unwrap(), Box::new(right)),

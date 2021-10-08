@@ -1,4 +1,4 @@
-use super::{ExprNode, Ident, Match};
+use super::{ExprNode, ForLoop, Ident, Match, Var};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Stmt {
@@ -8,6 +8,7 @@ pub enum Stmt {
     Match(Match),
     VarDecl(Ident, Option<ExprNode>),
     Print(ExprNode),
+    For(Box<ForLoop>),
 }
 
 impl From<Stmt> for Vec<Stmt> {

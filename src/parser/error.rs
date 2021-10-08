@@ -1,6 +1,9 @@
 use thiserror::Error;
 
-use crate::token::{Kind, Token};
+use crate::{
+    runtime::Value,
+    token::{Kind, Token},
+};
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -18,4 +21,6 @@ pub enum ParseError {
     TooManyArguments(usize),
     #[error("[line {0}] too many default branches in match statement")]
     TooManyMatchDefaultBranches(usize),
+    #[error("[line {0}] invalid range {1} {2}")]
+    InvalidRange(usize, String, Value),
 }

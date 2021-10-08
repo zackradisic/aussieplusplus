@@ -1,5 +1,3 @@
-use std::io::Stdout;
-
 use aussie_plus_plus::{
     lexer::{source, Lexer},
     parser::parser::Parser,
@@ -29,6 +27,57 @@ fn test_code(src: &str, expected: &str) {
             assert_eq!(s, expected);
         }
     }
+}
+
+#[test]
+fn test_for_loop_exit() {
+    test_code(
+        "
+    I reckon x is a walkabout from [0 to 2] <
+        gimme x;
+    >
+    ",
+        "0\n1\n2",
+    );
+}
+
+#[test]
+fn test_for_loop_ranges() {
+    test_code(
+        "
+    I reckon x is a walkabout from [0 to 2] <
+        gimme x;
+    >
+    ",
+        "0\n1\n2",
+    );
+
+    test_code(
+        "
+    I reckon x is a walkabout from (0 to 2] <
+        gimme x;
+    >
+    ",
+        "1\n2",
+    );
+
+    test_code(
+        "
+    I reckon x is a walkabout from [0 to 2] <
+        gimme x;
+    >
+    ",
+        "0\n1\n2",
+    );
+
+    test_code(
+        "
+    I reckon x is a walkabout from [0 to 2) <
+        gimme x;
+    >
+    ",
+        "0\n1",
+    );
 }
 
 #[test]
@@ -123,6 +172,31 @@ fn test_match() {
         ",
         "42069",
     );
+}
+
+#[test]
+fn test_if() {
+    test_code(
+        "i reckon x = 5;
+        ya reckon x == 5 ? <
+            gimme \"fair dinkum mate!\";
+        >",
+        "fair dinkum mate!",
+    );
+
+    test_code(
+        "i reckon x = 5;
+        ya reckon x == 5 ? gimme \"fair dinkum mate!\";
+        ",
+        "fair dinkum mate!",
+    );
+
+    test_code(
+        "i reckon x = 5;
+    ya reckon x == 42 ? gimme \"strewth!!\"; 
+    gimme \"lmao\";",
+        "lmao",
+    )
 }
 
 #[test]

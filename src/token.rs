@@ -26,6 +26,8 @@ pub enum Kind {
     QuestionMark,   // ?
     LeftBoomerang,  // <
     RightBoomerang, // >
+    LeftBracket,    // [
+    RightBracket,   // ]
     LeftParen,      // (
     RightParen,     // )
     Assign,         // =
@@ -42,6 +44,9 @@ pub enum Kind {
     BangEqual,      // !=
     And,            // &&
     Or,             // ||
+    Until,          // until
+    From,           // from
+    To,             // to
     Gimme,          // gimme
     Isa,            // (is a)
     BuggerAll,      // Bugger all (nil/null)
@@ -63,6 +68,11 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::LeftBracket => "[",
+            Kind::RightBracket => "]",
+            Kind::Until => "until",
+            Kind::From => "from",
+            Kind::To => "to",
             Kind::Isa => "is a",
             Kind::Tilde => "~",
             Kind::QuestionMark => "?",

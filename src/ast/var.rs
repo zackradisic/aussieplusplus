@@ -15,6 +15,16 @@ impl Var {
     pub fn name(&self) -> String {
         self.ident.name()
     }
+
+    pub fn line(&self) -> usize {
+        self.ident.line
+    }
+}
+
+impl From<Ident> for Var {
+    fn from(ident: Ident) -> Self {
+        Self { ident }
+    }
 }
 
 impl From<(String, usize)> for Var {

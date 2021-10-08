@@ -1,5 +1,8 @@
 use aussie_plus_plus::{
-    ast::{BinaryOp, Expr, ExprNode, Ident, Match, MatchBranch, Pattern, Stmt, UnaryOp, Var},
+    ast::{
+        BinaryOp, Expr, ExprNode, ForLoop, Ident, Match, MatchBranch, Pattern, RangeBound, Stmt,
+        UnaryOp, Var,
+    },
     lexer::{lexer, source},
     parser::parser,
     runtime::Value,
@@ -16,6 +19,31 @@ where
     let stmts = parser.parse();
 
     check_fn(stmts)
+}
+
+#[test]
+fn test_parse_for() {
+    test_parse(
+        "i reckon x is a walkabout from (0 to 100) <
+            gimme x;
+            >",
+        |stmts| {
+            let inner = Stmt::Print(ExprNode::new(Expr::Var(("x", 2).into()), 2));
+            let body = vec![Stmt::Block(vec![inner])];
+            let range = (
+                RangeBound::Exclusive(ExprNode::new(Expr::Literal(0.into()), 1)),
+                RangeBound::Exclusive(ExprNode::new(Expr::Literal(100.into()), 1)),
+            );
+            assert_eq!(
+                stmts[0],
+                Stmt::For(Box::new(ForLoop::new(
+                    Var::new(("x", 1).into()),
+                    range,
+                    body
+                )))
+            )
+        },
+    );
 }
 
 #[test]

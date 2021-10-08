@@ -7,7 +7,10 @@ use std::{
     rc::Rc,
 };
 
-use crate::ast::{BinaryOp, Expr, ExprNode, Match, Pattern, Stmt, UnaryOp};
+use crate::{
+    ast::{BinaryOp, Expr, ExprNode, ForLoop, Match, Pattern, Range, Stmt, UnaryOp},
+    parser::error::ParseError,
+};
 
 use super::{
     environment::Environment,
@@ -61,6 +64,55 @@ impl<'a> Interpreter<'a> {
 
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
+            Stmt::For(for_loop) => {
+                let mut env = Environment::new_with_enclosing(Some(self.env()));
+                let mut start = match self.evaluate(&for_loop.range.0.expr())? {
+                    Value::Number(n) => n,
+                    other => {
+                        return Err(ParseError::InvalidRange(
+                            for_loop.var.line(),
+                            "start".into(),
+                            other,
+                        )
+                        .into())
+                    }
+                };
+                let end = match self.evaluate(&for_loop.range.1.expr())? {
+                    Value::Number(n) => n,
+                    other => {
+                        return Err(ParseError::InvalidRange(
+                            for_loop.var.line(),
+                            "start".into(),
+                            other,
+                        )
+                        .into())
+                    }
+                };
+
+                let range = (
+                    for_loop.range.0.to_evaluated(start),
+                    for_loop.range.1.to_evaluated(end),
+                );
+
+                let (mut i, _) = range.values();
+
+                let var_name = for_loop.var.name();
+                env.define(var_name.clone(), Value::Number(i));
+
+                let env = Rc::new(RefCell::new(env));
+
+                while range.satisfied(i) {
+                    match self.execute_block(&for_loop.body, env.clone())? {
+                        None => {}
+                        Some(ExitKind::Break) => break,
+                        Some(ExitKind::Return) => return Ok(Some(ExitKind::Return)),
+                    };
+                    range.iterate(&mut i);
+                    env.borrow_mut().assign(var_name.clone(), Value::Number(i));
+                }
+
+                Ok(None)
+            }
             Stmt::Print(expr) => {
                 let val = self.evaluate(expr)?;
                 self.print(format_args!("{}", val));
@@ -77,7 +129,9 @@ impl<'a> Interpreter<'a> {
                     if branch.pat.runtime_eq(&val) {
                         return self.execute_block(
                             &branch.body,
-                            Environment::new_with_enclosing(Some(self.env())),
+                            Rc::new(RefCell::new(Environment::new_with_enclosing(Some(
+                                self.env(),
+                            )))),
                         );
                     }
                 }
@@ -92,7 +146,7 @@ impl<'a> Interpreter<'a> {
                         };
                         env.define(var.unwrap().name(), val);
 
-                        self.execute_block(&branch.body, env)
+                        self.execute_block(&branch.body, Rc::new(RefCell::new(env)))
                     }
                     _ => Ok(None),
                 }
@@ -124,16 +178,18 @@ impl<'a> Interpreter<'a> {
 
                 Ok(None)
             }
-            Stmt::Block(stmts) => {
-                self.execute_block(stmts, Environment::new_with_enclosing(Some(self.env())))
-            }
+            Stmt::Block(stmts) => self.execute_block(
+                stmts,
+                Rc::new(RefCell::new(Environment::new_with_enclosing(Some(
+                    self.env(),
+                )))),
+            ),
         }
     }
 
-    fn execute_block(&mut self, stmts: &Vec<Stmt>, env: Environment) -> Result<Exit> {
-        println!("Executing block");
+    fn execute_block(&mut self, stmts: &Vec<Stmt>, env: Rc<RefCell<Environment>>) -> Result<Exit> {
         let previous = self.env.clone();
-        self.env = Rc::new(RefCell::new(env));
+        self.env = env;
 
         for stmt in stmts {
             match self.execute_stmt(stmt)? {
