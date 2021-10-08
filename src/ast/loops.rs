@@ -1,10 +1,5 @@
 use super::{ExprNode, Stmt, Var};
 
-pub enum Direction {
-    Increment,
-    Decrement,
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct ForLoop {
     pub var: Var,
@@ -19,6 +14,19 @@ impl ForLoop {
         body: Vec<Stmt>,
     ) -> Self {
         Self { var, range, body }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct WhileLoop {
+    pub var: Var,
+    pub cond: ExprNode,
+    pub body: Vec<Stmt>,
+}
+
+impl WhileLoop {
+    pub fn new(var: Var, cond: ExprNode, body: Vec<Stmt>) -> Self {
+        Self { var, cond, body }
     }
 }
 

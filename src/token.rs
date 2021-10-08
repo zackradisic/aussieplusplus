@@ -44,6 +44,7 @@ pub enum Kind {
     BangEqual,      // !=
     And,            // &&
     Or,             // ||
+    MateFuckThis,   // mate fuck this (break)
     Until,          // until
     From,           // from
     To,             // to
@@ -68,6 +69,7 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::MateFuckThis => "mate fuck this",
             Kind::LeftBracket => "[",
             Kind::RightBracket => "]",
             Kind::Until => "until",

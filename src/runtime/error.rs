@@ -4,6 +4,8 @@ use thiserror::Error;
 pub enum RuntimeError {
     #[error("[{line:?}] {message:?}")]
     Syntax { message: String, line: usize },
+    #[error("[{0}] Invalid break")]
+    InvalidBreak(usize),
     #[error("[0] can only call functions and classes")]
     InvalidCallee(usize),
     #[error("[{0}] expected {1} arguments but got {2}")]

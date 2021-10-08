@@ -1,6 +1,6 @@
 pub enum ExitKind {
-    Break,
-    Return,
+    Break(usize),
+    Return(usize),
 }
 
 pub type Exit = Option<ExitKind>;

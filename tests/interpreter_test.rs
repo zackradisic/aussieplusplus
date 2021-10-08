@@ -5,7 +5,11 @@ use aussie_plus_plus::{
 };
 
 fn test_code(src: &str, expected: &str) {
-    let expected = expected.to_owned() + "\n";
+    let expected = if expected == "" {
+        expected.to_owned()
+    } else {
+        expected.to_owned() + "\n"
+    };
     let mut s = "print ".to_string();
     s.push_str(src);
     let mut lex = Lexer::new(source::Regular::new(src.chars()));
@@ -30,14 +34,15 @@ fn test_code(src: &str, expected: &str) {
 }
 
 #[test]
-fn test_for_loop_exit() {
+fn test_break() {
     test_code(
         "
-    I reckon x is a walkabout from [0 to 2] <
-        gimme x;
+    I reckon x is a walkabout from [1 to 5] <
+        ya reckon x == 2 ? mate fuck this;
+        gimme \"iteration number: \" + x;
     >
     ",
-        "0\n1\n2",
+        "iteration number: 1",
     );
 }
 
@@ -77,6 +82,33 @@ fn test_for_loop_ranges() {
     >
     ",
         "0\n1",
+    );
+
+    test_code(
+        "
+    I reckon x is a walkabout from (0 to 0) <
+        gimme x;
+    >
+    ",
+        "",
+    );
+
+    test_code(
+        "
+    I reckon x is a walkabout from (0 to 0] <
+        gimme x;
+    >
+    ",
+        "",
+    );
+
+    test_code(
+        "
+    I reckon x is a walkabout from (-1 to 1] <
+        gimme x;
+    >
+    ",
+        "",
     );
 }
 

@@ -134,7 +134,12 @@ impl Parser {
             _ => self.expression_statement(),
             Kind::LeftBoomerang => self.block_statement(),
             Kind::YaReckon => self.condition_statement(),
-            Kind::Gimme => self.print_statement()
+            Kind::Gimme => self.print_statement(),
+            Kind::MateFuckThis => {
+                let tok = self.previous();
+                self.consume(Kind::Semicolon)?;
+                Ok(Stmt::Break(tok))
+            }
         )
     }
 

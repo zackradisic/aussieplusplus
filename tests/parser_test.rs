@@ -6,7 +6,7 @@ use aussie_plus_plus::{
     lexer::{lexer, source},
     parser::parser,
     runtime::Value,
-    token::Kind,
+    token::{Kind, Token},
 };
 
 fn test_parse<T>(source: &str, check_fn: T)
@@ -22,13 +22,35 @@ where
 }
 
 #[test]
-fn test_parse_for() {
+fn test_parse_for_loop() {
     test_parse(
         "i reckon x is a walkabout from (0 to 100) <
             gimme x;
             >",
         |stmts| {
             let inner = Stmt::Print(ExprNode::new(Expr::Var(("x", 2).into()), 2));
+            let body = vec![Stmt::Block(vec![inner])];
+            let range = (
+                RangeBound::Exclusive(ExprNode::new(Expr::Literal(0.into()), 1)),
+                RangeBound::Exclusive(ExprNode::new(Expr::Literal(100.into()), 1)),
+            );
+            assert_eq!(
+                stmts[0],
+                Stmt::For(Box::new(ForLoop::new(
+                    Var::new(("x", 1).into()),
+                    range,
+                    body
+                )))
+            )
+        },
+    );
+
+    test_parse(
+        "i reckon x is a walkabout from (0 to 100) <
+            mate fuck this;
+            >",
+        |stmts| {
+            let inner = Stmt::Break(Token::new(Kind::MateFuckThis, 2));
             let body = vec![Stmt::Block(vec![inner])];
             let range = (
                 RangeBound::Exclusive(ExprNode::new(Expr::Literal(0.into()), 1)),

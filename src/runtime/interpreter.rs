@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    ast::{BinaryOp, Expr, ExprNode, ForLoop, Match, Pattern, Range, Stmt, UnaryOp},
+    ast::{BinaryOp, Expr, ExprNode, Match, Pattern, Range, Stmt, UnaryOp},
     parser::error::ParseError,
 };
 
@@ -56,6 +56,7 @@ impl<'a> Interpreter<'a> {
         for stmt in stmts {
             match self.execute_stmt(&stmt)? {
                 None => {}
+                Some(ExitKind::Break(line)) => return Err(RuntimeError::InvalidBreak(line).into()),
                 Some(_) => return Ok(()),
             };
         }
@@ -64,9 +65,16 @@ impl<'a> Interpreter<'a> {
 
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
+            Stmt::Break(tok) => Ok(Some(ExitKind::Break(tok.line()))),
+            Stmt::While(_while_loop) => {
+                todo!();
+                // let mut env = Environment::new_with_enclosing(Some(self.env()));
+                // let name = while_loop.var.name();
+                // env.define(name.clone(), value)
+            }
             Stmt::For(for_loop) => {
                 let mut env = Environment::new_with_enclosing(Some(self.env()));
-                let mut start = match self.evaluate(&for_loop.range.0.expr())? {
+                let start = match self.evaluate(&for_loop.range.0.expr())? {
                     Value::Number(n) => n,
                     other => {
                         return Err(ParseError::InvalidRange(
@@ -104,8 +112,8 @@ impl<'a> Interpreter<'a> {
                 while range.satisfied(i) {
                     match self.execute_block(&for_loop.body, env.clone())? {
                         None => {}
-                        Some(ExitKind::Break) => break,
-                        Some(ExitKind::Return) => return Ok(Some(ExitKind::Return)),
+                        Some(ExitKind::Break(_)) => break,
+                        Some(ExitKind::Return(line)) => return Ok(Some(ExitKind::Return(line))),
                     };
                     range.iterate(&mut i);
                     env.borrow_mut().assign(var_name.clone(), Value::Number(i));
@@ -171,8 +179,7 @@ impl<'a> Interpreter<'a> {
                 if Self::is_truthy(&val) {
                     match self.execute_stmt(then)? {
                         None => {}
-                        Some(ExitKind::Break) => return Ok(None),
-                        Some(ExitKind::Return) => return Ok(Some(ExitKind::Return)),
+                        Some(exit) => return Ok(Some(exit)),
                     };
                 }
 
