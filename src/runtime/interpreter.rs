@@ -127,9 +127,10 @@ impl<'a> Interpreter<'a> {
 
                 Ok(None)
             }
-            Stmt::Block(stmts) => {
-                self.execute_block(stmts, Environment::new_with_enclosing(self.env()))
-            }
+            Stmt::Block(stmts) => self.execute_block(
+                stmts,
+                Rc::new(RefCell::new(Environment::new_with_enclosing(self.env()))),
+            ),
         }
     }
 
@@ -143,8 +144,10 @@ impl<'a> Interpreter<'a> {
 
         for branch in branches {
             if branch.pat.runtime_eq(&val) {
-                return self
-                    .execute_block(&branch.body, Environment::new_with_enclosing(self.env()));
+                return self.execute_block(
+                    &branch.body,
+                    Rc::new(RefCell::new(Environment::new_with_enclosing(self.env()))),
+                );
             }
         }
 
@@ -158,7 +161,7 @@ impl<'a> Interpreter<'a> {
                 };
                 env.define(var.unwrap().name(), val);
 
-                self.execute_block(&branch.body, env)
+                self.execute_block(&branch.body, Rc::new(RefCell::new(env)))
             }
             _ => Ok(None),
         }
@@ -195,6 +198,8 @@ impl<'a> Interpreter<'a> {
         let var_name = for_loop.var.name();
         env.define(var_name.clone(), Value::Number(i));
 
+        let env = Rc::new(RefCell::new(env));
+
         while range.satisfied(i) {
             match self.execute_block(&for_loop.body, env.clone())? {
                 None => {}
@@ -202,14 +207,18 @@ impl<'a> Interpreter<'a> {
                 Some(ExitKind::Return(line)) => return Ok(Some(ExitKind::Return(line))),
             };
             range.iterate(&mut i);
-            env.assign(var_name.clone(), Value::Number(i));
+            env.borrow_mut().assign(var_name.clone(), Value::Number(i));
         }
 
         Ok(None)
     }
 
-    pub fn execute_block(&mut self, stmts: &Vec<Stmt>, env: Environment) -> Result<Exit> {
-        let previous = mem::replace(&mut self.env, Rc::new(RefCell::new(env)));
+    pub fn execute_block(
+        &mut self,
+        stmts: &Vec<Stmt>,
+        env: Rc<RefCell<Environment>>,
+    ) -> Result<Exit> {
+        let previous = mem::replace(&mut self.env, env);
 
         for stmt in stmts {
             match self.execute_stmt(stmt)? {

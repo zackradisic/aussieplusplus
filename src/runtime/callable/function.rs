@@ -67,7 +67,7 @@ impl AussieCallable for UserDefined {
             env.define(parameter.name(), value.clone());
         }
 
-        match interpreter.execute_block(&self.decl.body, env)? {
+        match interpreter.execute_block(&self.decl.body, Rc::new(RefCell::new(env)))? {
             Some(ExitKind::Return(val)) => {
                 return Ok(val);
             }
