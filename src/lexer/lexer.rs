@@ -130,7 +130,7 @@ impl<'a, T: Source> Lexer<T> {
                 'g' if self.peek_is('i') => self.eat_keyword_or_ident(c, Kind::Gimme)?,
                 'c' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::ChookBickey)?,
                 'w' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::Walkabout)?,
-                'h' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,
+                't' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,
                 'n' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::NahYeah)?,
                 'b' => {
                     if self.peek_is('l') {
@@ -147,7 +147,11 @@ impl<'a, T: Source> Lexer<T> {
                     if self.peek_is(' ') {
                         self.eat_keyword_or_ident(c, Kind::IReckon)?
                     } else if self.peek_is('s') {
-                        self.eat_keyword_or_ident(c, Kind::Isa)?
+                        match self.eat_keyword_or_ident(c, Kind::Isa)? {
+                            Kind::Isa => Kind::Isa,
+                            Kind::Ident(maybe_is) if maybe_is == "is" => Kind::Is,
+                            ident => ident,
+                        }
                     } else {
                         self.eat_identifier(c)?
                     }

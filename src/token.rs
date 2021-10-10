@@ -49,6 +49,7 @@ pub enum Kind {
     From,           // from
     To,             // to
     Gimme,          // gimme
+    Is,             // (is)
     Isa,            // (is a)
     BuggerAll,      // Bugger all (nil/null)
     ChookBickey,    // Chook bickey (end of program)
@@ -75,6 +76,7 @@ impl Kind {
             Kind::Until => "until",
             Kind::From => "from",
             Kind::To => "to",
+            Kind::Is => "is",
             Kind::Isa => "is a",
             Kind::Tilde => "~",
             Kind::QuestionMark => "?",
@@ -103,7 +105,7 @@ impl Kind {
             Kind::BlimeyMate => "blimey mate",   // Blimey mate (program start)
             Kind::IReckon => "i reckon",         // I reckon (var decl)
             Kind::YaReckon => "ya reckon",       // Ya reckon (analogous to if)
-            Kind::HardYakkaFor => "hard yakka for", // Hard yakka for (function decl)
+            Kind::HardYakkaFor => "the hard yakka for", // Hard yakka for (function decl)
             Kind::Bail => "bail",                // bail (return)
             Kind::NahYeah => "nah, yeah",        // true
             Kind::YeahNah => "yeah, nah",        // false

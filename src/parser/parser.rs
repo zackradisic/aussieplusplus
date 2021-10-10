@@ -85,6 +85,7 @@ impl Parser {
 
     fn fn_decl(&mut self) -> Result<Stmt> {
         let name = self.consume_ident()?;
+        self.consume(Kind::Is)?;
         let mut params: Vec<Ident> = Vec::new();
 
         self.consume(Kind::LeftParen)?;
@@ -395,7 +396,7 @@ impl Parser {
 
     fn unary(&mut self) -> Result<ExprNode> {
         match self.peek().kind() {
-            Kind::Bang => {
+            Kind::Minus | Kind::Bang => {
                 let tok = self.advance();
                 let op: Option<UnaryOp> = tok.kind().into();
                 let right = self.unary()?;

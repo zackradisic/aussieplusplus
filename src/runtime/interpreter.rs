@@ -282,8 +282,16 @@ impl<'a> Interpreter<'a> {
             Expr::Unary(op, ref expr) => {
                 let right = self.evaluate(expr)?;
 
-                match op {
-                    UnaryOp::Bang => Ok(Value::Bool(!Self::is_truthy(&right))),
+                match (op, right) {
+                    (UnaryOp::Bang, right) => Ok(Value::Bool(!Self::is_truthy(&right))),
+                    (UnaryOp::Minus, Value::Number(right)) => Ok(Value::Number(right * -1f64)),
+                    _ => {
+                        return Err(RuntimeError::new_syntax(
+                            "invalid unary operation",
+                            expr.line(),
+                        )
+                        .into())
+                    }
                 }
             }
             Expr::Binary(ref left_expr, op, ref right_expr) => {

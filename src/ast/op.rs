@@ -5,12 +5,14 @@ use crate::token::Kind;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum UnaryOp {
     Bang,
+    Minus,
 }
 
 impl From<Kind> for Option<UnaryOp> {
     fn from(kind: Kind) -> Self {
         match kind {
             Kind::Bang => Some(UnaryOp::Bang),
+            Kind::Minus => Some(UnaryOp::Minus),
             _ => None,
         }
     }

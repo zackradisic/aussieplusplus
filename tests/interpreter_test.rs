@@ -37,14 +37,14 @@ fn test_code(src: &str, expected: &str) {
 fn test_functions() {
     test_code(
         "
-    Hard yakka for fibonacci ( x ) <
-        ya reckon x <= 1 ? < bail x; >
+    THE HARD YAKKA FOR fibonacci IS ( x ) <
+        YA RECKON x <= 1 ? BAIL x; 
 
-        bail fibonacci(x - 1) + fibonacci(x - 2);
+        BAIL fibonacci(x - 1) + fibonacci(x - 2);
     >
-    gimme fibonacci(30);
+    GIMME fibonacci(10);
     ",
-        "832040",
+        "55",
     );
 }
 
@@ -52,9 +52,9 @@ fn test_functions() {
 fn test_break() {
     test_code(
         "
-    I reckon x is a walkabout from [1 to 5] <
-        ya reckon x == 2 ? mate fuck this;
-        gimme \"iteration number: \" + x;
+    I RECKON X IS A walkabout FROM [1 to 5] <
+        YA RECKON x == 2 ? MATE FUCK THIS;
+        GIMME \"iteration number: \" + x;
     >
     ",
         "iteration number: 1",
@@ -102,7 +102,7 @@ fn test_for_loop_ranges() {
     test_code(
         "
     I reckon x is a walkabout from (0 to 0) <
-        gimme x;
+        gimme \"val: \" + x;
     >
     ",
         "",
@@ -111,7 +111,7 @@ fn test_for_loop_ranges() {
     test_code(
         "
     I reckon x is a walkabout from (0 to 0] <
-        gimme x;
+        gimme \"val: \" + x;
     >
     ",
         "",
@@ -123,7 +123,7 @@ fn test_for_loop_ranges() {
         gimme x;
     >
     ",
-        "",
+        "0\n1",
     );
 }
 
