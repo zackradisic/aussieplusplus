@@ -22,5 +22,5 @@ pub enum ParseError {
     #[error("[line {0}] too many default branches in match statement")]
     TooManyMatchDefaultBranches(usize),
     #[error("[line {0}] invalid range {1} {2}")]
-    InvalidRange(usize, String, Value),
+    InvalidRange(usize, String, String),
 }

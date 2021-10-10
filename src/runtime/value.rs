@@ -1,6 +1,8 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
 use crate::token::Kind;
+
+use super::Callable;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
@@ -8,6 +10,7 @@ pub enum Value {
     Number(f64),
     Bool(bool),
     Nil,
+    Callable(Rc<Callable>),
 }
 
 impl From<Value> for String {
@@ -23,6 +26,7 @@ impl From<Value> for String {
             Value::Nil => format!("{}", Kind::BuggerAll),
             Value::Number(n) => format!("{}", n),
             Value::String(s) => s.clone(),
+            Value::Callable(c) => format!("{}", c),
         }
     }
 }

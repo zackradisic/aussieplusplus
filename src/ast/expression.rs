@@ -1,4 +1,4 @@
-use crate::runtime::Value;
+use crate::{runtime::Value, token::Token};
 
 use super::{
     op::{BinaryOp, UnaryOp},
@@ -33,4 +33,5 @@ pub enum Expr {
     Literal(Value),
     Var(Var),
     Assign(Var, Box<ExprNode>),
+    Call(Box<ExprNode>, Token, Vec<ExprNode>),
 }

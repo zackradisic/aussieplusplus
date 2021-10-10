@@ -3,20 +3,23 @@ use std::{
     cell::RefCell,
     fmt::Arguments,
     io::{stdout, Write},
+    mem,
     ops::Add,
     rc::Rc,
 };
 
 use crate::{
-    ast::{BinaryOp, Expr, ExprNode, Match, Pattern, Range, Stmt, UnaryOp},
+    ast::{BinaryOp, Expr, ExprNode, ForLoop, Match, Pattern, Range, Stmt, UnaryOp},
     parser::error::ParseError,
+    runtime::AussieCallable,
+    token::Token,
 };
 
 use super::{
     environment::Environment,
     error::RuntimeError,
     exit::{Exit, ExitKind},
-    RuntimePartialEq, Value,
+    Callable, Function, RuntimePartialEq, UserDefined, Value,
 };
 
 pub struct Interpreter<'a> {
@@ -28,14 +31,14 @@ impl<'a> Interpreter<'a> {
     pub fn new() -> Self {
         Self {
             writer: None,
-            env: Rc::new(RefCell::new(Environment::new())),
+            env: Rc::new(RefCell::new(Environment::default())),
         }
     }
 
     pub fn new_with_writer(writer: &'a mut dyn Write) -> Interpreter<'a> {
         Interpreter {
             writer: Some(writer),
-            env: Rc::new(RefCell::new(Environment::new())),
+            env: Rc::new(RefCell::new(Environment::default())),
         }
     }
 
@@ -65,6 +68,25 @@ impl<'a> Interpreter<'a> {
 
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
+            Stmt::Return(expr) => match expr {
+                None => Ok(Some(ExitKind::Return(Value::Nil))),
+                Some(val) => Ok(Some(ExitKind::Return(self.evaluate(val)?))),
+            },
+            Stmt::FnDecl(fn_decl) => {
+                let function =
+                    Callable::Function(Function::UserDefined(Box::new(UserDefined::new(
+                        fn_decl.clone(),
+                        Rc::new(RefCell::new(Environment::new_with_enclosing(
+                            self.env.clone(),
+                        ))),
+                    ))));
+
+                self.env
+                    .borrow_mut()
+                    .define(fn_decl.name(), Value::Callable(Rc::new(function)));
+
+                Ok(None)
+            }
             Stmt::Break(tok) => Ok(Some(ExitKind::Break(tok.line()))),
             Stmt::While(_while_loop) => {
                 todo!();
@@ -72,93 +94,13 @@ impl<'a> Interpreter<'a> {
                 // let name = while_loop.var.name();
                 // env.define(name.clone(), value)
             }
-            Stmt::For(for_loop) => {
-                let mut env = Environment::new_with_enclosing(Some(self.env()));
-                let start = match self.evaluate(&for_loop.range.0.expr())? {
-                    Value::Number(n) => n,
-                    other => {
-                        return Err(ParseError::InvalidRange(
-                            for_loop.var.line(),
-                            "start".into(),
-                            other,
-                        )
-                        .into())
-                    }
-                };
-                let end = match self.evaluate(&for_loop.range.1.expr())? {
-                    Value::Number(n) => n,
-                    other => {
-                        return Err(ParseError::InvalidRange(
-                            for_loop.var.line(),
-                            "start".into(),
-                            other,
-                        )
-                        .into())
-                    }
-                };
-
-                let range = (
-                    for_loop.range.0.to_evaluated(start),
-                    for_loop.range.1.to_evaluated(end),
-                );
-
-                let (mut i, _) = range.values();
-
-                let var_name = for_loop.var.name();
-                env.define(var_name.clone(), Value::Number(i));
-
-                let env = Rc::new(RefCell::new(env));
-
-                while range.satisfied(i) {
-                    match self.execute_block(&for_loop.body, env.clone())? {
-                        None => {}
-                        Some(ExitKind::Break(_)) => break,
-                        Some(ExitKind::Return(line)) => return Ok(Some(ExitKind::Return(line))),
-                    };
-                    range.iterate(&mut i);
-                    env.borrow_mut().assign(var_name.clone(), Value::Number(i));
-                }
-
-                Ok(None)
-            }
+            Stmt::For(for_loop) => self.execute_for_loop(for_loop),
             Stmt::Print(expr) => {
                 let val = self.evaluate(expr)?;
                 self.print(format_args!("{}", val));
                 Ok(None)
             }
-            Stmt::Match(Match {
-                val,
-                branches,
-                default,
-            }) => {
-                let val = self.evaluate(val)?;
-
-                for branch in branches {
-                    if branch.pat.runtime_eq(&val) {
-                        return self.execute_block(
-                            &branch.body,
-                            Rc::new(RefCell::new(Environment::new_with_enclosing(Some(
-                                self.env(),
-                            )))),
-                        );
-                    }
-                }
-
-                match default {
-                    Some(branch) if !branch.pat.runtime_eq(&val) => {
-                        let mut env = Environment::new_with_enclosing(Some(self.env()));
-                        let var = if let Pattern::Var(v) = &branch.pat {
-                            Some(v)
-                        } else {
-                            None
-                        };
-                        env.define(var.unwrap().name(), val);
-
-                        self.execute_block(&branch.body, Rc::new(RefCell::new(env)))
-                    }
-                    _ => Ok(None),
-                }
-            }
+            Stmt::Match(m) => self.execute_match(m),
             Stmt::Expr(expr_node) => {
                 let _ = self.evaluate(expr_node)?;
                 Ok(None)
@@ -185,23 +127,97 @@ impl<'a> Interpreter<'a> {
 
                 Ok(None)
             }
-            Stmt::Block(stmts) => self.execute_block(
-                stmts,
-                Rc::new(RefCell::new(Environment::new_with_enclosing(Some(
-                    self.env(),
-                )))),
-            ),
+            Stmt::Block(stmts) => {
+                self.execute_block(stmts, Environment::new_with_enclosing(self.env()))
+            }
         }
     }
 
-    fn execute_block(&mut self, stmts: &Vec<Stmt>, env: Rc<RefCell<Environment>>) -> Result<Exit> {
-        let previous = self.env.clone();
-        self.env = env;
+    fn execute_match(&mut self, m: &Match) -> Result<Exit> {
+        let Match {
+            val,
+            branches,
+            default,
+        } = m;
+        let val = self.evaluate(val)?;
+
+        for branch in branches {
+            if branch.pat.runtime_eq(&val) {
+                return self
+                    .execute_block(&branch.body, Environment::new_with_enclosing(self.env()));
+            }
+        }
+
+        match default {
+            Some(branch) if !branch.pat.runtime_eq(&val) => {
+                let mut env = Environment::new_with_enclosing(self.env());
+                let var = if let Pattern::Var(v) = &branch.pat {
+                    Some(v)
+                } else {
+                    None
+                };
+                env.define(var.unwrap().name(), val);
+
+                self.execute_block(&branch.body, env)
+            }
+            _ => Ok(None),
+        }
+    }
+
+    fn execute_for_loop(&mut self, for_loop: &Box<ForLoop>) -> Result<Exit> {
+        let mut env = Environment::new_with_enclosing(self.env());
+        let start = match self.evaluate(&for_loop.range.0.expr())? {
+            Value::Number(n) => n,
+            other => {
+                return Err(ParseError::InvalidRange(
+                    for_loop.var.line(),
+                    "start".into(),
+                    other.into(),
+                )
+                .into())
+            }
+        };
+        let end = match self.evaluate(&for_loop.range.1.expr())? {
+            Value::Number(n) => n,
+            other => {
+                let line = for_loop.var.line();
+                return Err(ParseError::InvalidRange(line, "start".into(), other.into()).into());
+            }
+        };
+
+        let range = (
+            for_loop.range.0.to_evaluated(start),
+            for_loop.range.1.to_evaluated(end),
+        );
+
+        let (mut i, _) = range.values();
+
+        let var_name = for_loop.var.name();
+        env.define(var_name.clone(), Value::Number(i));
+
+        while range.satisfied(i) {
+            match self.execute_block(&for_loop.body, env.clone())? {
+                None => {}
+                Some(ExitKind::Break(_)) => break,
+                Some(ExitKind::Return(line)) => return Ok(Some(ExitKind::Return(line))),
+            };
+            range.iterate(&mut i);
+            env.assign(var_name.clone(), Value::Number(i));
+        }
+
+        Ok(None)
+    }
+
+    pub fn execute_block(&mut self, stmts: &Vec<Stmt>, env: Environment) -> Result<Exit> {
+        let previous = mem::replace(&mut self.env, Rc::new(RefCell::new(env)));
 
         for stmt in stmts {
             match self.execute_stmt(stmt)? {
                 None => {}
-                Some(s) => return Ok(Some(s)),
+                Some(s) => {
+                    self.env = previous;
+                    return Ok(Some(s));
+                }
             };
         }
 
@@ -214,29 +230,9 @@ impl<'a> Interpreter<'a> {
 impl<'a> Interpreter<'a> {
     pub fn evaluate(&mut self, node: &ExprNode) -> Result<Value> {
         match node.expr() {
-            // Expr::Call(ref expr_callee, ref token, ref args) => {
-            //     let callee = self.evaluate(expr_callee)?;
-
-            //     if !callee.is_callable() {
-            //         return Err(RuntimeError::InvalidCallee(token.line).into());
-            //     }
-
-            //     let callable = match callee {
-            //         Value::Callable(RloxCallable::Function(Function::UserDefined(func))) => func,
-            //         _ => todo!(),
-            //     };
-
-            //     if args.len() != callable.arity().into() {
-            //         return Err(RuntimeError::InvalidArity(
-            //             token.line,
-            //             callable.arity(),
-            //             args.len(),
-            //         )
-            //         .into());
-            //     }
-
-            //     callable.call(self, args)
-            // }
+            Expr::Call(expr_callee, token, params) => {
+                self.evaluate_call(expr_callee, token, params)
+            }
             // Expr::Logical(left, op, right) => match op {
             //     LogicalOp::And => match Self::is_truthy(&self.evaluate(left)?) {
             //         true => {
@@ -282,53 +278,89 @@ impl<'a> Interpreter<'a> {
                 }
             }
             Expr::Binary(ref left_expr, op, ref right_expr) => {
-                let line = left_expr.line();
-                let a = self.evaluate(&left_expr)?;
-                let b = self.evaluate(&right_expr)?;
-
-                match op {
-                    BinaryOp::Plus => match (a, b) {
-                        (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
-                        (Value::String(a), Value::String(b)) => Ok(Value::String(a + &b)),
-                        (Value::String(a), b) => Ok(Value::String(a.add(b.to_string().as_str()))),
-                        _ => Err(RuntimeError::new_syntax(
-                            "Both operands cannot be converted to strings",
-                            line,
-                        )
-                        .into()),
-                    },
-                    BinaryOp::Minus => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Number(a - b))
-                    }
-                    BinaryOp::Divide => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Number(a / b))
-                    }
-                    BinaryOp::Multiply => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Number(a * b))
-                    }
-                    BinaryOp::Greater => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Bool(a > b))
-                    }
-                    BinaryOp::GreaterEqual => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Bool(a >= b))
-                    }
-                    BinaryOp::Less => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Bool(a < b))
-                    }
-                    BinaryOp::LessEqual => {
-                        let (a, b) = self.unwrap_nums(a, b, line)?;
-                        Ok(Value::Bool(a <= b))
-                    }
-                    BinaryOp::NotEqual => Ok(Value::Bool(!self.is_equal(a, b))),
-                    BinaryOp::Equal => Ok(Value::Bool(self.is_equal(a, b))),
-                }
+                self.evaluate_binary(left_expr, op, right_expr)
             }
+        }
+    }
+
+    fn evaluate_call(
+        &mut self,
+        expr_callee: &Box<ExprNode>,
+        token: &Token,
+        params: &Vec<ExprNode>,
+    ) -> Result<Value> {
+        let callee = self.evaluate(expr_callee)?;
+
+        let callable = match callee {
+            Value::Callable(callable) => callable,
+            _ => return Err(RuntimeError::InvalidCallee(token.line()).into()),
+        };
+
+        if params.len() != callable.arity().into() {
+            return Err(
+                RuntimeError::InvalidArity(token.line(), callable.arity(), params.len()).into(),
+            );
+        }
+
+        let mut args: Vec<Value> = Vec::with_capacity(params.len());
+        for arg in params {
+            args.push(self.evaluate(arg)?);
+        }
+
+        callable.call(self, &args)
+    }
+
+    fn evaluate_binary(
+        &mut self,
+        left_expr: &Box<ExprNode>,
+        op: &BinaryOp,
+        right_expr: &Box<ExprNode>,
+    ) -> Result<Value> {
+        let line = left_expr.line();
+        let a = self.evaluate(&left_expr)?;
+        let b = self.evaluate(&right_expr)?;
+
+        match op {
+            BinaryOp::Plus => match (a, b) {
+                (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
+                (Value::String(a), Value::String(b)) => Ok(Value::String(a + &b)),
+                (Value::String(a), b) => Ok(Value::String(a.add(b.to_string().as_str()))),
+                _ => Err(RuntimeError::new_syntax(
+                    "Both operands cannot be converted to strings",
+                    line,
+                )
+                .into()),
+            },
+            BinaryOp::Minus => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Number(a - b))
+            }
+            BinaryOp::Divide => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Number(a / b))
+            }
+            BinaryOp::Multiply => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Number(a * b))
+            }
+            BinaryOp::Greater => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Bool(a > b))
+            }
+            BinaryOp::GreaterEqual => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Bool(a >= b))
+            }
+            BinaryOp::Less => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Bool(a < b))
+            }
+            BinaryOp::LessEqual => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Bool(a <= b))
+            }
+            BinaryOp::NotEqual => Ok(Value::Bool(!self.is_equal(a, b))),
+            BinaryOp::Equal => Ok(Value::Bool(self.is_equal(a, b))),
         }
     }
 }

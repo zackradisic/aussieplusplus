@@ -34,6 +34,21 @@ fn test_code(src: &str, expected: &str) {
 }
 
 #[test]
+fn test_functions() {
+    test_code(
+        "
+    Hard yakka for fibonacci ( x ) <
+        ya reckon x <= 1 ? < bail x; >
+
+        bail fibonacci(x - 1) + fibonacci(x - 2);
+    >
+    gimme fibonacci(30);
+    ",
+        "832040",
+    );
+}
+
+#[test]
 fn test_break() {
     test_code(
         "

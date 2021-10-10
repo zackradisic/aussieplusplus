@@ -254,7 +254,7 @@ impl<'a, T: Source> Lexer<T> {
 
     fn expect_separator(&mut self) -> Result<()> {
         let separated = match self.peek() {
-            Some(' ' | '\n' | ';' | ',') => true,
+            Some(' ' | '\n' | ';' | ',' | '(' | ')') => true,
             // EOF counts as delineator
             None => true,
             _ => false,

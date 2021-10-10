@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Var {
     ident: Ident,
@@ -71,5 +73,11 @@ impl From<(String, usize)> for Ident {
 impl From<(&str, usize)> for Ident {
     fn from(tup: (&str, usize)) -> Self {
         (tup.0.to_string(), tup.1).into()
+    }
+}
+
+impl Display for Ident {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
     }
 }

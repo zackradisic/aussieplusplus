@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::ast::{ForLoop, Ident, Match, MatchBranch, Pattern, RangeBound, Stmt, Var};
+use crate::ast::{FnDecl, ForLoop, Ident, Match, MatchBranch, Pattern, RangeBound, Stmt, Var};
 use crate::runtime::Value;
 use crate::{
     ast::{BinaryOp, Expr, ExprNode, UnaryOp},
@@ -53,7 +53,8 @@ impl Parser {
     fn declaration(&mut self) -> Result<Stmt> {
         match_toks!(self,
             _ => self.statement(),
-            Kind::IReckon => self.var_decl()
+            Kind::IReckon => self.var_decl(),
+            Kind::HardYakkaFor => self.fn_decl()
         )
     }
 
@@ -80,6 +81,38 @@ impl Parser {
                 self.loops(ident)
             }
         )
+    }
+
+    fn fn_decl(&mut self) -> Result<Stmt> {
+        let name = self.consume_ident()?;
+        let mut params: Vec<Ident> = Vec::new();
+
+        self.consume(Kind::LeftParen)?;
+        if !self.match_tok(Kind::RightParen) {
+            loop {
+                params.push(self.consume_ident()?);
+
+                if !self.match_tok(Kind::Comma) {
+                    break;
+                }
+            }
+            self.consume(Kind::RightParen)?;
+        }
+
+        self.consume(Kind::LeftBoomerang)?;
+
+        let body = match self.block_statement()? {
+            Stmt::Block(stmts) => stmts,
+            _ => {
+                return Err(ParseError::Any(
+                    name.line(),
+                    "expected block after function declaration".into(),
+                )
+                .into())
+            }
+        };
+
+        Ok(Stmt::FnDecl(FnDecl::new(name, params, body)))
     }
 
     fn loops(&mut self, ident: Ident) -> Result<Stmt> {
@@ -135,6 +168,7 @@ impl Parser {
             Kind::LeftBoomerang => self.block_statement(),
             Kind::YaReckon => self.condition_statement(),
             Kind::Gimme => self.print_statement(),
+            Kind::Bail => self.return_statement(),
             Kind::MateFuckThis => {
                 let tok = self.previous();
                 self.consume(Kind::Semicolon)?;
@@ -232,6 +266,16 @@ impl Parser {
         }
 
         Ok((vec, default))
+    }
+
+    fn return_statement(&mut self) -> Result<Stmt> {
+        if self.match_tok(Kind::Semicolon) {
+            Ok(Stmt::Return(None))
+        } else {
+            let stmt = Stmt::Return(Some(self.expression()?));
+            self.consume(Kind::Semicolon)?;
+            Ok(stmt)
+        }
     }
 
     // fn if_statement(&mut self) -> Result<Stmt> {
@@ -360,8 +404,46 @@ impl Parser {
                     tok.line(),
                 ))
             }
-            _ => self.primary(),
+            _ => self.call(),
         }
+    }
+
+    fn call(&mut self) -> Result<ExprNode> {
+        let mut expr = self.primary()?;
+
+        loop {
+            match self.match_tok(Kind::LeftParen) {
+                true => expr = self.finish_call(expr)?,
+                false => break,
+            }
+        }
+
+        Ok(expr)
+    }
+
+    fn finish_call(&mut self, callee: ExprNode) -> Result<ExprNode> {
+        let mut args: Vec<ExprNode> = Vec::new();
+
+        if !self.check(Kind::RightParen) {
+            loop {
+                if args.len() > 255 {
+                    return Err(ParseError::TooManyArguments(callee.line()).into());
+                }
+                args.push(self.expression()?);
+
+                if !self.match_tok(Kind::Comma) {
+                    break;
+                }
+            }
+        }
+
+        let paren = self.consume(Kind::RightParen)?;
+        let line = paren.line();
+
+        Ok(ExprNode::new(
+            Expr::Call(Box::new(callee), paren, args),
+            line,
+        ))
     }
 
     fn primary(&mut self) -> Result<ExprNode> {

@@ -6,20 +6,23 @@ use std::{
 
 use super::Value;
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct Environment {
-    values: HashMap<String, Value>,
-    enclosing: Option<Rc<RefCell<Environment>>>,
+    pub inner: Inner,
+}
+
+impl Default for Environment {
+    fn default() -> Self {
+        Self {
+            inner: Inner::new(),
+        }
+    }
 }
 
 impl Environment {
-    pub fn new() -> Self {
-        Self::new_with_enclosing(None)
-    }
-
-    pub fn new_with_enclosing(enclosing: Option<Rc<RefCell<Environment>>>) -> Self {
+    pub fn new_with_enclosing(inner: Rc<RefCell<Environment>>) -> Self {
         let mut env = Self {
-            enclosing,
-            values: HashMap::new(),
+            inner: Inner::with_enclosing(inner),
         };
 
         // env.define(
@@ -32,11 +35,46 @@ impl Environment {
         env
     }
 
-    pub fn define(&mut self, name: String, value: Value) {
+    pub fn print_values(&self) {
+        // println!("values: {:?}", self.values);
+    }
+
+    pub fn get(&self, key: &String) -> Option<Value> {
+        self.inner.get(key)
+    }
+
+    pub fn assign(&mut self, key: String, val: Value) -> bool {
+        self.inner.assign(key, val)
+    }
+
+    pub fn define(&mut self, key: String, value: Value) {
+        self.inner.define(key, value);
+    }
+
+    pub fn clone_values(&self) -> HashMap<String, Value> {
+        self.inner.values.clone()
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Inner {
+    enclosing: Option<Rc<RefCell<Environment>>>,
+    pub values: HashMap<String, Value>,
+}
+
+impl Inner {
+    fn new() -> Self {
+        Self {
+            enclosing: None,
+            values: HashMap::new(),
+        }
+    }
+
+    fn define(&mut self, name: String, value: Value) {
         self.values.insert(name, value);
     }
 
-    pub fn get(&self, name: &String) -> Option<Value> {
+    fn get(&self, name: &String) -> Option<Value> {
         match self.values.get(name).cloned() {
             None => match &self.enclosing {
                 None => None,
@@ -44,18 +82,26 @@ impl Environment {
             },
             Some(val) => Some(val),
         }
+        // self.values.get(name).cloned()
     }
 
-    pub fn assign(&mut self, name: String, value: Value) -> bool {
+    fn assign(&mut self, name: String, value: Value) -> bool {
         match self.values.entry(name.clone()) {
-            Entry::Vacant(_) => match self.enclosing.clone() {
+            Entry::Vacant(_) => match &mut self.enclosing {
                 None => false,
-                Some(enclosing) => (*enclosing).borrow_mut().assign(name, value),
+                Some(enclosing) => enclosing.borrow_mut().assign(name, value),
             },
             Entry::Occupied(mut entry) => {
                 entry.insert(value);
                 true
             }
+        }
+    }
+
+    fn with_enclosing(enclosing: Rc<RefCell<Environment>>) -> Self {
+        Self {
+            enclosing: Some(enclosing),
+            values: HashMap::new(),
         }
     }
 }
