@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
 use super::{Ident, Stmt};
 
@@ -18,7 +18,7 @@ impl FnDecl {
         }
     }
 
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> Rc<String> {
         self.ident.name()
     }
 }

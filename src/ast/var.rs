@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Var {
@@ -14,7 +14,7 @@ impl Var {
         self.ident.clone()
     }
 
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> Rc<String> {
         self.ident.name()
     }
 
@@ -43,16 +43,19 @@ impl From<(&str, usize)> for Var {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ident {
-    name: String,
+    name: Rc<String>,
     line: usize,
 }
 
 impl Ident {
     pub fn new(name: String, line: usize) -> Self {
-        Self { name, line }
+        Self {
+            name: Rc::new(name),
+            line,
+        }
     }
 
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> Rc<String> {
         self.name.clone()
     }
 
@@ -64,7 +67,7 @@ impl Ident {
 impl From<(String, usize)> for Ident {
     fn from(tup: (String, usize)) -> Self {
         Self {
-            name: tup.0,
+            name: Rc::new(tup.0),
             line: tup.1,
         }
     }

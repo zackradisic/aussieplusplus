@@ -6,7 +6,7 @@ use aussie_plus_plus::{
 
 fn main() {
     fn fibonacci(n: u32) {
-        let code = "hard yakka for fibonacci ( x ) < ya reckon x <= 1 ? <
+        let code = "the hard yakka for fibonacci is ( x ) < ya reckon x <= 1 ? <
                 bail x;
             >
             bail fibonacci(x - 1) + fibonacci(x - 2);

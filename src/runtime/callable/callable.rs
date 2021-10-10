@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
 use anyhow::Result;
 
@@ -9,7 +9,7 @@ use super::Function;
 pub trait AussieCallable {
     fn call(&self, interpreter: &mut Interpreter, args: &Vec<Value>) -> Result<Value>;
     fn arity(&self) -> u8;
-    fn name(&self) -> String;
+    fn name(&self) -> Rc<String>;
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -30,7 +30,7 @@ impl AussieCallable for Callable {
         }
     }
 
-    fn name(&self) -> String {
+    fn name(&self) -> Rc<String> {
         match self {
             Callable::Function(func) => func.name(),
         }

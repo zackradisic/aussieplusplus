@@ -30,7 +30,7 @@ impl AussieCallable for Function {
         }
     }
 
-    fn name(&self) -> String {
+    fn name(&self) -> Rc<String> {
         match self {
             Function::UserDefined(func) => func.name(),
             Function::BuiltIn(func) => func.name(),
@@ -81,7 +81,7 @@ impl AussieCallable for UserDefined {
         self.decl.params.len() as u8
     }
 
-    fn name(&self) -> String {
+    fn name(&self) -> Rc<String> {
         self.decl.name()
     }
 }

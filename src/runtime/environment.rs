@@ -43,15 +43,15 @@ impl Environment {
         self.inner.get(key)
     }
 
-    pub fn assign(&mut self, key: String, val: Value) -> bool {
+    pub fn assign(&mut self, key: Rc<String>, val: Value) -> bool {
         self.inner.assign(key, val)
     }
 
-    pub fn define(&mut self, key: String, value: Value) {
+    pub fn define(&mut self, key: Rc<String>, value: Value) {
         self.inner.define(key, value);
     }
 
-    pub fn clone_values(&self) -> HashMap<String, Value> {
+    pub fn clone_values(&self) -> HashMap<Rc<String>, Value> {
         self.inner.values.clone()
     }
 }
@@ -59,7 +59,7 @@ impl Environment {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Inner {
     enclosing: Option<Rc<RefCell<Environment>>>,
-    pub values: HashMap<String, Value>,
+    pub values: HashMap<Rc<String>, Value>,
 }
 
 impl Inner {
@@ -70,7 +70,7 @@ impl Inner {
         }
     }
 
-    fn define(&mut self, name: String, value: Value) {
+    fn define(&mut self, name: Rc<String>, value: Value) {
         self.values.insert(name, value);
     }
 
@@ -85,7 +85,7 @@ impl Inner {
         // self.values.get(name).cloned()
     }
 
-    fn assign(&mut self, name: String, value: Value) -> bool {
+    fn assign(&mut self, name: Rc<String>, value: Value) -> bool {
         match self.values.entry(name.clone()) {
             Entry::Vacant(_) => match &mut self.enclosing {
                 None => false,

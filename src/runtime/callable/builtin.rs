@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::rc::Rc;
 use std::{thread, time::Duration};
 
 use crate::runtime::error::RuntimeError;
@@ -24,7 +25,7 @@ impl AussieCallable for BuiltIn {
         }
     }
 
-    fn name(&self) -> String {
+    fn name(&self) -> Rc<String> {
         match self {
             Self::Sleep(clock) => clock.name(),
         }
@@ -40,7 +41,9 @@ impl Display for BuiltIn {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Sleep;
+pub struct Sleep {
+    name: Rc<String>,
+}
 
 impl AussieCallable for Sleep {
     fn call(&self, _: &mut Interpreter, args: &Vec<Value>) -> anyhow::Result<Value> {
@@ -62,7 +65,7 @@ impl AussieCallable for Sleep {
         1
     }
 
-    fn name(&self) -> String {
-        "sleep".to_string()
+    fn name(&self) -> Rc<String> {
+        self.name.clone()
     }
 }
