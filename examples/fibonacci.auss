@@ -1,0 +1,7 @@
+THE HARD YAKKA FOR fibonacci IS ( x ) <
+    YA RECKON x <= 1 ? BAIL x;
+
+	BAIL fibonacci(x - 1) + fibonacci(x - 2);
+>
+
+GIMME fibonacci(30);
