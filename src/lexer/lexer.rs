@@ -146,7 +146,9 @@ impl<'a, T: Source> Lexer<T> {
                     }
                 }
                 'i' => {
-                    if self.peek_is(' ') {
+                    if self.peek_is('m') {
+                        self.eat_keyword_or_ident(c, Kind::Import)?
+                    } else if self.peek_is(' ') {
                         self.eat_keyword_or_ident(c, Kind::IReckon)?
                     } else if self.peek_is('s') {
                         match self.eat_keyword_or_ident(c, Kind::Isa)? {

@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::runtime::{Interpreter, Value};
 
-use super::Function;
+use super::{BuiltIn, Function, UserDefined};
 
 pub trait AussieCallable {
     fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value>;
@@ -42,5 +42,17 @@ impl Display for Callable {
         match self {
             Self::Function(func) => func.fmt(f),
         }
+    }
+}
+
+impl From<BuiltIn> for Callable {
+    fn from(builtin: BuiltIn) -> Self {
+        Callable::Function(Function::BuiltIn(builtin))
+    }
+}
+
+impl From<UserDefined> for Callable {
+    fn from(user_defined: UserDefined) -> Self {
+        Callable::Function(Function::UserDefined(Box::new(user_defined)))
     }
 }

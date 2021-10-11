@@ -8,8 +8,10 @@ pub enum RuntimeError {
     InvalidBreak(usize),
     #[error("[{0}] SORRY MATE! YA CAN ONLY CALL FUNCTIONS, YA DAFT BUGGER!")]
     InvalidCallee(usize),
-    #[error("[{0}] OI MATE! EXPECTED {1} ARGUMENTS BUT GOT {2}")]
+    #[error("[{0}] OI MATE, CAN YA FUCKIN' COUNT?? EXPECTED {1} ARGUMENTS BUT GOT {2}")]
     InvalidArity(usize, u8, usize),
+    #[error("[{0}] CAN'T FIND THE IMPORT {1}")]
+    UnknownImport(usize, String),
     #[error("{0}")]
     General(String),
 }

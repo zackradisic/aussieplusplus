@@ -2,6 +2,8 @@ use std::fmt::Display;
 use std::rc::Rc;
 use std::{thread, time::Duration};
 
+use chrono::{TimeZone, Utc};
+
 use crate::runtime::error::RuntimeError;
 use crate::runtime::{Interpreter, Value};
 
@@ -10,24 +12,38 @@ use super::AussieCallable;
 #[derive(Clone, PartialEq, Debug)]
 pub enum BuiltIn {
     Sleep(Sleep),
+    Time(Time),
+}
+
+impl BuiltIn {
+    pub fn lookup(name: &str) -> Option<Self> {
+        match name {
+            "HitTheSack" => Some(BuiltIn::Sleep(Sleep::default())),
+            "GimmeTime" => Some(BuiltIn::Time(Time::default())),
+            _ => None,
+        }
+    }
 }
 
 impl AussieCallable for BuiltIn {
     fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> anyhow::Result<Value> {
         match self {
-            Self::Sleep(clock) => clock.call(interpreter, args),
+            Self::Sleep(sleep) => sleep.call(interpreter, args),
+            Self::Time(time) => time.call(interpreter, args),
         }
     }
 
     fn arity(&self) -> u8 {
         match self {
-            Self::Sleep(clock) => clock.arity(),
+            Self::Sleep(sleep) => sleep.arity(),
+            Self::Time(time) => time.arity(),
         }
     }
 
     fn name(&self) -> Rc<String> {
         match self {
-            Self::Sleep(clock) => clock.name(),
+            Self::Sleep(sleep) => sleep.name(),
+            Self::Time(time) => time.name(),
         }
     }
 }
@@ -35,7 +51,8 @@ impl AussieCallable for BuiltIn {
 impl Display for BuiltIn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Sleep(_) => write!(f, "clock()"),
+            Self::Sleep(s) => write!(f, "{}(ms)", s.name()),
+            Self::Time(t) => write!(f, "{}()", t.name()),
         }
     }
 }
@@ -43,6 +60,14 @@ impl Display for BuiltIn {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Sleep {
     name: Rc<String>,
+}
+
+impl Default for Sleep {
+    fn default() -> Self {
+        Self {
+            name: Rc::new("HitTheSack".into()),
+        }
+    }
 }
 
 impl AussieCallable for Sleep {
@@ -63,6 +88,38 @@ impl AussieCallable for Sleep {
 
     fn arity(&self) -> u8 {
         1
+    }
+
+    fn name(&self) -> Rc<String> {
+        self.name.clone()
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct Time {
+    name: Rc<String>,
+}
+
+impl Default for Time {
+    fn default() -> Self {
+        Self {
+            name: Rc::new("GimmeTime".into()),
+        }
+    }
+}
+
+impl AussieCallable for Time {
+    fn call(&self, _: &mut Interpreter, _: &[Value]) -> anyhow::Result<Value> {
+        let utc = Utc::now().naive_utc();
+        let tz = chrono_tz::Australia::Melbourne
+            .from_local_datetime(&utc)
+            .unwrap();
+
+        Ok(Value::String(tz.to_string()))
+    }
+
+    fn arity(&self) -> u8 {
+        0
     }
 
     fn name(&self) -> Rc<String> {

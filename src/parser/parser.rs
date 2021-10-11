@@ -190,8 +190,16 @@ impl Parser {
                 self.consume(Kind::Semicolon)?;
                 Ok(Stmt::Break(tok))
             },
-            Kind::FuckinPiker => self.exit_statement()
+            Kind::FuckinPiker => self.exit_statement(),
+            Kind::Import => self.import_statement()
         )
+    }
+
+    fn import_statement(&mut self) -> Result<Stmt> {
+        let ident = self.consume_ident()?;
+        self.consume(Kind::Semicolon)?;
+
+        Ok(Stmt::Import(ident))
     }
 
     fn exit_statement(&mut self) -> Result<Stmt> {

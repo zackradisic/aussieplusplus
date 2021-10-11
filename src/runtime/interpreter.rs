@@ -20,7 +20,7 @@ use super::{
     environment::Environment,
     error::RuntimeError,
     exit::{Exit, ExitKind},
-    Callable, Function, RuntimePartialEq, UserDefined, Value,
+    BuiltIn, Callable, Function, RuntimePartialEq, UserDefined, Value,
 };
 
 pub struct Interpreter<'a> {
@@ -76,19 +76,35 @@ impl<'a> Interpreter<'a> {
 
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
+            Stmt::Import(ident) => {
+                match BuiltIn::lookup(&ident.name()) {
+                    None => {
+                        return Err(RuntimeError::UnknownImport(
+                            ident.line(),
+                            ident.name().to_string(),
+                        )
+                        .into());
+                    }
+                    Some(builtin) => self
+                        .env
+                        .borrow_mut()
+                        .define(builtin.name(), Value::Callable(Rc::new(builtin.into()))),
+                };
+                Ok(None)
+            }
             Stmt::Exit => process::exit(0),
             Stmt::Return(expr) => match expr {
                 None => Ok(Some(ExitKind::Return(Value::Nil))),
                 Some(val) => Ok(Some(ExitKind::Return(self.evaluate(val)?))),
             },
             Stmt::FnDecl(fn_decl) => {
-                let function =
-                    Callable::Function(Function::UserDefined(Box::new(UserDefined::new(
-                        fn_decl.clone(),
-                        Rc::new(RefCell::new(Environment::new_with_enclosing(
-                            self.env.clone(),
-                        ))),
-                    ))));
+                let function: Callable = UserDefined::new(
+                    fn_decl.clone(),
+                    Rc::new(RefCell::new(Environment::new_with_enclosing(
+                        self.env.clone(),
+                    ))),
+                )
+                .into();
 
                 self.env
                     .borrow_mut()

@@ -15,6 +15,7 @@ pub enum Stmt {
     Break(Token),
     While(Box<WhileLoop>),
     Return(Option<ExprNode>),
+    Import(Ident),
     Exit,
 }
 
