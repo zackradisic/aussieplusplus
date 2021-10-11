@@ -27,11 +27,17 @@ macro_rules! match_toks {
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
+    // To discriminate closing boomerang vs. gt
+    inside_block: usize,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Self { tokens, current: 0 }
+        Self {
+            tokens,
+            current: 0,
+            inside_block: 0,
+        }
     }
 
     pub fn parse(&mut self) -> Vec<Stmt> {
@@ -40,7 +46,6 @@ impl Parser {
         while !self.is_at_end() {
             match self.declaration() {
                 Ok(stmt) => {
-                    println!("Got: {:?}", stmt);
                     stmts.push(stmt);
                 }
                 Err(e) => eprintln!("{:?}", e),
@@ -101,17 +106,20 @@ impl Parser {
         }
 
         self.consume(Kind::LeftBoomerang)?;
+        self.inside_block += 1;
 
         let body = match self.block_statement()? {
             Stmt::Block(stmts) => stmts,
             _ => {
+                self.inside_block -= 1;
                 return Err(ParseError::Any(
                     name.line(),
-                    "expected block after function declaration".into(),
+                    "STREWTH! EXPECTED BLOCK AFTER FUNCTION DECLARATION".into(),
                 )
-                .into())
+                .into());
             }
         };
+        self.inside_block -= 1;
 
         Ok(Stmt::FnDecl(FnDecl::new(name, params, body)))
     }
@@ -166,7 +174,12 @@ impl Parser {
     fn statement(&mut self) -> Result<Stmt> {
         match_toks!(self,
             _ => self.expression_statement(),
-            Kind::LeftBoomerang => self.block_statement(),
+            Kind::LeftBoomerang => {
+                self.inside_block += 1;
+                let ret = self.block_statement();
+                self.inside_block -= 1;
+                ret
+            },
             Kind::YaReckon => self.condition_statement(),
             Kind::Gimme => self.print_statement(),
             Kind::Bail => self.return_statement(),
@@ -204,7 +217,10 @@ impl Parser {
             Kind::Isa => {
                 self.consume(Kind::Isa)?;
                 self.consume(Kind::LeftBoomerang)?;
-                let (branches, default) = self.match_branches()?;
+                self.inside_block += 1;
+                let ret = self.match_branches();
+                self.inside_block -= 1;
+                let (branches, default) = ret?;
 
                 Ok(Stmt::Match(Match::new(cond, branches, default)))
             }
@@ -340,7 +356,19 @@ impl Parser {
             let kind = self.advance().kind();
             let op: Option<BinaryOp> = kind.clone().into();
 
-            let right = self.term()?;
+            let right = match self.term() {
+                Ok(term) => term,
+                Err(e) => {
+                    if self.inside_block > 0 {
+                        return Err(ParseError::Any(
+                            line,
+                            "OI MATE, DID YA FORGET A SEMI-COLON OR AN OPERAND??".into(),
+                        )
+                        .into());
+                    }
+                    return Err(e);
+                }
+            };
 
             left = ExprNode::new(
                 Expr::Binary(Box::new(left), op.unwrap(), Box::new(right)),
@@ -454,19 +482,7 @@ impl Parser {
             k => {
                 // self.current -= 1;
                 // panic!("k: {:?}", k);
-                return Err(ParseError::ExpectedTokens(
-                    vec![
-                        Kind::Number(420.into()),
-                        Kind::String("any string literal".into()),
-                        Kind::NahYeah,
-                        Kind::YeahNah,
-                        Kind::BuggerAll,
-                        Kind::Ident("any identifier".into()),
-                    ],
-                    k,
-                    line,
-                )
-                .into());
+                return Err(ParseError::ExpectPrimary(line, k).into());
             }
         };
 

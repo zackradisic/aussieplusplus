@@ -385,16 +385,16 @@ impl<'a, T: Source> Lexer<T> {
 
 #[derive(Error, Debug)]
 pub enum LexError {
-    #[error("[line {2}] expected {0} but got {1}")]
+    #[error("[line {2}] OI MATE! expected {0} but got {1}")]
     ExpectedCharacter(char, char, usize),
-    #[error("[line {2}] expected one of {0:?} but got {1}")]
+    #[error("[line {2}] FUCK ME DEAD! EXPECTED ONE OF {0:?} BUT GOT {1}")]
     ExpectedCharacters(Vec<char>, char, usize),
-    #[error("[line {0}] unexpected EOF")]
+    #[error("[line {0}] STREWTH! unexpected EOF")]
     UnexpectedEOF(usize),
-    #[error("[line {1}] unexpected character {0}")]
+    #[error("[line {1}] BLOODY HELL! UNEXPECTED CHARACTER {0}")]
     UnexpectedCharacter(char, usize),
-    #[error("[line {0}] unterminated")]
+    #[error("[line {0}] UNTERMINATED STRING YA FUCKWIT!")]
     UnterminatedString(usize),
-    #[error("[line {0}] invalid number")]
+    #[error("[line {0}] OI BLUDGER! INVALID NUMBER")]
     InvalidNumber(usize),
 }

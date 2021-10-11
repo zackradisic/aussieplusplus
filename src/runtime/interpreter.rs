@@ -58,7 +58,8 @@ impl<'a> Interpreter<'a> {
         if let Some(w) = w {
             let _ = writeln!(w, "{}", args).unwrap();
         }
-        stdout().write_fmt(args).unwrap();
+        println!("{}", args);
+        stdout().flush().unwrap();
     }
 
     pub fn interpret(&mut self, stmts: Vec<Stmt>) -> Result<()> {
