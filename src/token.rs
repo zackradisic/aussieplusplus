@@ -45,6 +45,7 @@ pub enum Kind {
     BangEqual,      // !=
     And,            // &&
     Or,             // ||
+    FuckinPiker,    // FUCKINPIKER (early exit)
     MateFuckThis,   // mate fuck this (break)
     Until,          // until
     From,           // from
@@ -71,6 +72,7 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::FuckinPiker => "fuckinpiker",
             Kind::Modulo => "%",
             Kind::MateFuckThis => "mate fuck this",
             Kind::LeftBracket => "[",

@@ -32,6 +32,15 @@ fn test_code(src: &str, expected: &str) {
         }
     }
 }
+#[test]
+fn test_early_exit() {
+    test_code(
+        "i reckon x = 5;
+             ya reckon x == 5 ? FUCKINPIKER;
+             gimme \"this should not appear\";",
+        "",
+    );
+}
 
 #[test]
 fn test_functions() {

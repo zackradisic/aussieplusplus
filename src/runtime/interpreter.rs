@@ -5,6 +5,7 @@ use std::{
     io::{stdout, Write},
     mem,
     ops::Add,
+    process,
     rc::Rc,
 };
 
@@ -75,6 +76,7 @@ impl<'a> Interpreter<'a> {
 
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
+            Stmt::Exit => process::exit(0),
             Stmt::Return(expr) => match expr {
                 None => Ok(Some(ExitKind::Return(Value::Nil))),
                 Some(val) => Ok(Some(ExitKind::Return(self.evaluate(val)?))),
@@ -211,7 +213,7 @@ impl<'a> Interpreter<'a> {
             match self.execute_block(&for_loop.body, env.clone())? {
                 None => {}
                 Some(ExitKind::Break(_)) => break,
-                Some(ExitKind::Return(line)) => return Ok(Some(ExitKind::Return(line))),
+                Some(other) => return Ok(Some(other)),
             };
             range.iterate(&mut i);
             env.borrow_mut().assign(var_name.clone(), Value::Number(i));

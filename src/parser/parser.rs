@@ -189,8 +189,14 @@ impl Parser {
                 let tok = self.previous();
                 self.consume(Kind::Semicolon)?;
                 Ok(Stmt::Break(tok))
-            }
+            },
+            Kind::FuckinPiker => self.exit_statement()
         )
+    }
+
+    fn exit_statement(&mut self) -> Result<Stmt> {
+        self.consume(Kind::Semicolon)?;
+        Ok(Stmt::Exit)
     }
 
     fn block_statement(&mut self) -> Result<Stmt> {
@@ -296,9 +302,6 @@ impl Parser {
             Ok(stmt)
         }
     }
-
-    // fn if_statement(&mut self) -> Result<Stmt> {
-    // }
 
     fn expression_statement(&mut self) -> Result<Stmt> {
         let expr = self.expression()?;

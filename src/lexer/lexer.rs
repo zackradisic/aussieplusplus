@@ -124,6 +124,7 @@ impl<'a, T: Source> Lexer<T> {
                 }
             }
             c => match c.to_ascii_lowercase() {
+                'f' if self.peek_is('u') => self.eat_keyword_or_ident(c, Kind::FuckinPiker)?,
                 'm' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::MateFuckThis)?,
                 'u' if self.peek_is('u') => self.eat_keyword_or_ident(c, Kind::Until)?,
                 't' if self.peek_is('o') => self.eat_keyword_or_ident(c, Kind::To)?,
