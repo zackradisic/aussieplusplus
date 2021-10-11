@@ -261,6 +261,11 @@ fn test_ops() {
     test_code("gimme 4 % 2;", "0");
     test_code("gimme 5 % 2;", "1");
 
+    test_code("gimme nah, yeah && yeah, nah;", "Yeah, nah");
+    test_code("gimme nah, yeah && nah, yeah;", "Nah, yeah");
+    test_code("gimme nah, yeah || yeah, nah;", "Nah, yeah");
+    test_code("gimme yeah, nah || yeah, nah;", "Yeah, nah");
+
     test_code("gimme ((5 + 5) / 2) * 2;", "10");
 
     test_code("gimme 5 + 5 * 2 / 2;", "10");

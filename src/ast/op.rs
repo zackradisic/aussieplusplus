@@ -69,3 +69,28 @@ impl Display for BinaryOp {
         }
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum LogicalOp {
+    And,
+    Or,
+}
+
+impl From<Kind> for Option<LogicalOp> {
+    fn from(kind: Kind) -> Self {
+        match kind {
+            Kind::And => Some(LogicalOp::And),
+            Kind::Or => Some(LogicalOp::Or),
+            _ => None,
+        }
+    }
+}
+
+impl Display for LogicalOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::And => write!(f, "&&"),
+            Self::Or => write!(f, "||"),
+        }
+    }
+}

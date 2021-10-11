@@ -2,7 +2,7 @@ use crate::{runtime::Value, token::Token};
 
 use super::{
     op::{BinaryOp, UnaryOp},
-    Var,
+    LogicalOp, Var,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -29,6 +29,7 @@ impl ExprNode {
 pub enum Expr {
     Unary(UnaryOp, Box<ExprNode>),
     Binary(Box<ExprNode>, BinaryOp, Box<ExprNode>),
+    Logical(Box<ExprNode>, LogicalOp, Box<ExprNode>),
     Grouping(Box<ExprNode>),
     Literal(Value),
     Var(Var),

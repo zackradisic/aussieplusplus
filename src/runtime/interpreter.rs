@@ -9,7 +9,7 @@ use std::{
 };
 
 use crate::{
-    ast::{BinaryOp, Expr, ExprNode, ForLoop, Match, Pattern, Range, Stmt, UnaryOp},
+    ast::{BinaryOp, Expr, ExprNode, ForLoop, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp},
     parser::error::ParseError,
     runtime::AussieCallable,
     token::Token,
@@ -245,31 +245,6 @@ impl<'a> Interpreter<'a> {
             Expr::Call(expr_callee, token, params) => {
                 self.evaluate_call(expr_callee, token, params)
             }
-            // Expr::Logical(left, op, right) => match op {
-            //     LogicalOp::And => match Self::is_truthy(&self.evaluate(left)?) {
-            //         true => {
-            //             let right = self.evaluate(right)?;
-            //             if Self::is_truthy(&right) {
-            //                 return Ok(right);
-            //             }
-            //             Ok(Value::Bool(false))
-            //         }
-            //         false => Ok(Value::Bool(false)),
-            //     },
-            //     LogicalOp::Or => {
-            //         let left = self.evaluate(left)?;
-            //         match Self::is_truthy(&left) {
-            //             true => Ok(left),
-            //             false => {
-            //                 let right = self.evaluate(right)?;
-            //                 if Self::is_truthy(&right) {
-            //                     return Ok(right);
-            //                 }
-            //                 Ok(Value::Bool(false))
-            //             }
-            //         }
-            //     }
-            // },
             Expr::Assign(ref var, ref expr) => {
                 let value = self.evaluate(expr)?;
                 self.env.borrow_mut().assign(var.name(), value.clone());
@@ -293,6 +268,31 @@ impl<'a> Interpreter<'a> {
                     }
                 }
             }
+            Expr::Logical(left, op, right) => match op {
+                LogicalOp::And => match Self::is_truthy(&self.evaluate(left)?) {
+                    true => {
+                        let right = self.evaluate(right)?;
+                        if Self::is_truthy(&right) {
+                            return Ok(right);
+                        }
+                        Ok(Value::Bool(false))
+                    }
+                    false => Ok(Value::Bool(false)),
+                },
+                LogicalOp::Or => {
+                    let left = self.evaluate(left)?;
+                    match Self::is_truthy(&left) {
+                        true => Ok(left),
+                        false => {
+                            let right = self.evaluate(right)?;
+                            if Self::is_truthy(&right) {
+                                return Ok(right);
+                            }
+                            Ok(Value::Bool(false))
+                        }
+                    }
+                }
+            },
             Expr::Binary(ref left_expr, op, ref right_expr) => {
                 self.evaluate_binary(left_expr, op, right_expr)
             }

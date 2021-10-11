@@ -1,6 +1,8 @@
 use anyhow::Result;
 
-use crate::ast::{FnDecl, ForLoop, Ident, Match, MatchBranch, Pattern, RangeBound, Stmt, Var};
+use crate::ast::{
+    FnDecl, ForLoop, Ident, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
+};
 use crate::runtime::Value;
 use crate::{
     ast::{BinaryOp, Expr, ExprNode, UnaryOp},
@@ -311,7 +313,7 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<ExprNode> {
-        let expr = self.equality()?;
+        let expr = self.or()?;
         match self.peek().kind {
             Kind::Assign => {
                 let equals = self.advance();
@@ -326,6 +328,37 @@ impl Parser {
             }
             _ => Ok(expr),
         }
+    }
+
+    fn or(&mut self) -> Result<ExprNode> {
+        let mut expr = self.and()?;
+
+        while self.match_tok(Kind::Or) {
+            let tok = self.previous();
+            let right = self.and()?;
+            expr = ExprNode::new(
+                Expr::Logical(Box::new(expr), LogicalOp::Or, Box::new(right)),
+                tok.line(),
+            );
+        }
+
+        Ok(expr)
+    }
+
+    fn and(&mut self) -> Result<ExprNode> {
+        let mut expr = self.equality()?;
+
+        while self.match_tok(Kind::And) {
+            let tok = self.previous();
+            let right = self.equality()?;
+
+            expr = ExprNode::new(
+                Expr::Logical(Box::new(expr), LogicalOp::And, Box::new(right)),
+                tok.line(),
+            );
+        }
+
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<ExprNode> {
