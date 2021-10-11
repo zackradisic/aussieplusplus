@@ -1,20 +1,30 @@
+use std::{
+    fs,
+    io::{self, BufRead},
+    path::PathBuf,
+};
+use structopt::StructOpt;
+
 use aussie_plus_plus::{
     lexer::{source, Lexer},
     parser::parser::Parser,
     runtime::Interpreter,
 };
 
+#[derive(StructOpt, Debug)]
+#[structopt(name = "aussie++")]
+struct Opt {
+    /// Path to input file
+    #[structopt(name = "File", parse(from_os_str))]
+    filepath: Option<PathBuf>,
+}
+
 fn main() {
-    fn fibonacci(n: u32) {
-        let code = "the hard yakka for fibonacci is ( x ) < ya reckon x <= 1 ? <
-                bail x;
-            >
-            bail fibonacci(x - 1) + fibonacci(x - 2);
-        >
-        gimme fibonacci("
-            .to_string()
-            + &n.to_string()
-            + &");".to_string();
+    let opt = Opt::from_args();
+
+    let code: String;
+    if let Some(filepath) = opt.filepath {
+        code = fs::read_to_string(filepath).expect("failed to read file");
         let mut lex = Lexer::new(source::Regular::new(code.chars()));
         let (tokens, _) = lex.lex();
         let mut parser = Parser::new(tokens);
@@ -26,7 +36,21 @@ fn main() {
         if let Err(e) = iptr.interpret(stmts) {
             panic!("Failed to interpret: {}", e);
         }
+
+        return;
     }
 
-    fibonacci(30);
+    let stdin = io::stdin();
+    let mut i = Interpreter::new();
+    for line in stdin.lock().lines() {
+        let line = line.unwrap();
+        let mut lex = Lexer::new(source::Regular::new(line.chars()));
+        let (tokens, _) = lex.lex();
+        let mut parser = Parser::new(tokens);
+        let stmts = parser.parse();
+
+        if let Err(e) = i.interpret(stmts) {
+            panic!("Failed to interpret: {}", e);
+        }
+    }
 }
