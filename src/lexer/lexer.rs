@@ -1,4 +1,4 @@
-use anyhow::{Error, Result};
+use anyhow::Result;
 use thiserror::Error;
 
 use crate::token::{Kind, Token};
@@ -107,7 +107,7 @@ impl<'a, T: Source> Lexer<T> {
                         self.peek().unwrap_or_default(),
                         self.line,
                     )
-                    .new());
+                    .into());
                 }
             }
             '|' => {
@@ -119,7 +119,7 @@ impl<'a, T: Source> Lexer<T> {
                         self.peek().unwrap_or_default(),
                         self.line,
                     )
-                    .new());
+                    .into());
                 }
             }
             c => match c.to_ascii_lowercase() {
@@ -149,7 +149,9 @@ impl<'a, T: Source> Lexer<T> {
                     } else if self.peek_is('s') {
                         match self.eat_keyword_or_ident(c, Kind::Isa)? {
                             Kind::Isa => Kind::Isa,
-                            Kind::Ident(maybe_is) if maybe_is == "is" => Kind::Is,
+                            Kind::Ident(maybe_is) if maybe_is.to_ascii_lowercase() == "is" => {
+                                Kind::Is
+                            }
                             ident => ident,
                         }
                     } else {
@@ -172,7 +174,7 @@ impl<'a, T: Source> Lexer<T> {
                     } else if c == '_' || c.is_alphabetic() {
                         self.eat_identifier(c)?
                     } else {
-                        return Err(LexError::UnexpectedCharacter(c, self.line).new());
+                        return Err(LexError::UnexpectedCharacter(c, self.line).into());
                     }
                 }
             },
@@ -191,7 +193,7 @@ impl<'a, T: Source> Lexer<T> {
                 s.push(peek);
             } else if peek == '.' {
                 if has_decimal {
-                    return Err(LexError::InvalidNumber(self.line).new());
+                    return Err(LexError::InvalidNumber(self.line).into());
                 }
                 has_decimal = true;
                 s.push(peek);
@@ -205,7 +207,7 @@ impl<'a, T: Source> Lexer<T> {
             return Ok(Kind::Number(f));
         }
 
-        return Err(LexError::InvalidNumber(self.line).new());
+        Err(LexError::InvalidNumber(self.line).into())
     }
 
     fn eat_string(&mut self) -> Result<Kind> {
@@ -228,7 +230,7 @@ impl<'a, T: Source> Lexer<T> {
         }
 
         if !ended {
-            return Err(LexError::UnterminatedString(self.line).new());
+            return Err(LexError::UnterminatedString(self.line).into());
         }
 
         Ok(Kind::String(s))
@@ -257,23 +259,18 @@ impl<'a, T: Source> Lexer<T> {
     }
 
     fn expect_separator(&mut self) -> Result<()> {
-        let separated = match self.peek() {
-            Some(' ' | '\n' | ';' | ',' | '(' | ')') => true,
-            // EOF counts as delineator
-            None => true,
-            _ => false,
-        };
+        let separated = matches!(self.peek(), Some(' ' | '\n' | ';' | ',' | '(' | ')') | None);
 
         if separated {
             return Ok(());
         }
 
-        return Err(LexError::ExpectedCharacters(
+        Err(LexError::ExpectedCharacters(
             vec![' ', '\n', ';', ','],
             self.peek().unwrap_or_default(),
             self.line,
         )
-        .new());
+        .into())
     }
 
     fn eat_whitespace(&mut self) {
@@ -320,7 +317,7 @@ impl<'a, T: Source> Lexer<T> {
                 None => {
                     self.src.reset_peek();
                     ret = Some(Err(
-                        LexError::ExpectedCharacter(expected, '\0', self.line).new()
+                        LexError::ExpectedCharacter(expected, '\0', self.line).into()
                     ));
                     break;
                 }
@@ -328,7 +325,7 @@ impl<'a, T: Source> Lexer<T> {
                     if c.to_ascii_lowercase().ne(&expected) {
                         self.src.reset_peek();
                         ret = Some(Err(
-                            LexError::ExpectedCharacter(expected, c, self.line).new()
+                            LexError::ExpectedCharacter(expected, c, self.line).into()
                         ));
                         break;
                     }
@@ -353,20 +350,14 @@ impl<'a, T: Source> Lexer<T> {
     }
 
     fn peek(&mut self) -> Option<char> {
-        let res = self.src.peek().map(|&p| p);
+        let res = self.src.peek().copied();
         self.src.reset_peek();
         res
     }
 
     fn peek_is(&mut self, c: char) -> bool {
         match self.peek() {
-            Some(ch) => {
-                if ch.to_ascii_lowercase().eq(&c) {
-                    true
-                } else {
-                    false
-                }
-            }
+            Some(ch) => ch.to_ascii_lowercase().eq(&c),
             None => false,
         }
     }
@@ -374,7 +365,7 @@ impl<'a, T: Source> Lexer<T> {
     /// Can be called multiple times to peek more than one
     /// character ahead
     fn peek_multi(&mut self) -> Option<char> {
-        self.src.peek().map(|&p| p)
+        self.src.peek().copied()
     }
 
     fn peek_adv(&mut self, c: char) -> bool {
@@ -406,10 +397,4 @@ pub enum LexError {
     UnterminatedString(usize),
     #[error("[line {0}] invalid number")]
     InvalidNumber(usize),
-}
-
-impl LexError {
-    pub fn new(self) -> Error {
-        Error::new(self)
-    }
 }

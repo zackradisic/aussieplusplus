@@ -52,7 +52,7 @@ fn test_functions() {
 fn test_break() {
     test_code(
         "
-    I RECKON X IS A walkabout FROM [1 to 5] <
+    I RECKON x IS A walkabout FROM [1 to 5] <
         YA RECKON x == 2 ? MATE FUCK THIS;
         GIMME \"iteration number: \" + x;
     >

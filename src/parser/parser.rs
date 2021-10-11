@@ -64,9 +64,9 @@ impl Parser {
         match_toks!(self,
             other => {
                 let line = self.peek().line();
-                return Err(
+                Err(
                     ParseError::ExpectedTokens(vec![Kind::Semicolon, Kind::Assign], other, line).into(),
-                );
+                )
             },
             Kind::Semicolon => {
                 Ok(Stmt::VarDecl(ident, None))
@@ -118,7 +118,7 @@ impl Parser {
 
     fn loops(&mut self, ident: Ident) -> Result<Stmt> {
         match_toks!(self,
-            other => {
+            _other => {
                 todo!()
             },
             Kind::From => {
@@ -232,7 +232,10 @@ impl Parser {
         while !self.match_tok(Kind::RightBoomerang) {
             let peek = self.peek();
             let val: Option<Pattern> = peek.clone().into();
-            let val = if val.is_none() {
+            let val = if let Some(val) = val {
+                let _ = self.advance();
+                val
+            } else {
                 return Err(ParseError::ExpectedTokens(
                     vec![
                         Kind::Number(420.into()),
@@ -246,9 +249,6 @@ impl Parser {
                     peek.line(),
                 )
                 .into());
-            } else {
-                let _ = self.advance();
-                val.unwrap()
             };
 
             self.consume(Kind::Tilde)?;
@@ -316,10 +316,7 @@ impl Parser {
         let mut left = self.comparison()?;
         let line = left.line();
 
-        while match self.peek().kind() {
-            Kind::BangEqual | Kind::Equals => true,
-            _ => false,
-        } {
+        while matches!(self.peek().kind(), Kind::BangEqual | Kind::Equals) {
             let op: Option<BinaryOp> = self.advance().kind().into();
             let right = self.comparison()?;
 
@@ -336,10 +333,10 @@ impl Parser {
         let mut left = self.term()?;
         let line = left.line();
 
-        while match self.peek().kind() {
-            Kind::RightBoomerang | Kind::GTE | Kind::LeftBoomerang | Kind::LTE => true,
-            _ => false,
-        } {
+        while matches!(
+            self.peek().kind(),
+            Kind::RightBoomerang | Kind::GTE | Kind::LeftBoomerang | Kind::LTE
+        ) {
             let kind = self.advance().kind();
             let op: Option<BinaryOp> = kind.clone().into();
 
@@ -358,10 +355,7 @@ impl Parser {
         let mut left = self.factor()?;
         let line = left.line();
 
-        while match self.peek().kind() {
-            Kind::Minus | Kind::Plus => true,
-            _ => false,
-        } {
+        while matches!(self.peek().kind(), Kind::Minus | Kind::Plus) {
             let op: Option<BinaryOp> = self.advance().kind().into();
             let right = self.factor()?;
 
@@ -378,10 +372,7 @@ impl Parser {
         let mut left = self.unary()?;
         let line = left.line();
 
-        while match self.peek().kind() {
-            Kind::Slash | Kind::Asterisk => true,
-            _ => false,
-        } {
+        while matches!(self.peek().kind(), Kind::Slash | Kind::Asterisk) {
             let op: Option<BinaryOp> = self.advance().kind().into();
             let right = self.unary()?;
 
@@ -412,11 +403,8 @@ impl Parser {
     fn call(&mut self) -> Result<ExprNode> {
         let mut expr = self.primary()?;
 
-        loop {
-            match self.match_tok(Kind::LeftParen) {
-                true => expr = self.finish_call(expr)?,
-                false => break,
-            }
+        while self.match_tok(Kind::LeftParen) {
+            expr = self.finish_call(expr)?
         }
 
         Ok(expr)

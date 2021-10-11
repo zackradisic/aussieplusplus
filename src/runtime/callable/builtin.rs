@@ -13,7 +13,7 @@ pub enum BuiltIn {
 }
 
 impl AussieCallable for BuiltIn {
-    fn call(&self, interpreter: &mut Interpreter, args: &Vec<Value>) -> anyhow::Result<Value> {
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> anyhow::Result<Value> {
         match self {
             Self::Sleep(clock) => clock.call(interpreter, args),
         }
@@ -46,7 +46,7 @@ pub struct Sleep {
 }
 
 impl AussieCallable for Sleep {
-    fn call(&self, _: &mut Interpreter, args: &Vec<Value>) -> anyhow::Result<Value> {
+    fn call(&self, _: &mut Interpreter, args: &[Value]) -> anyhow::Result<Value> {
         let duration = match &args[0] {
             Value::Number(n) => *n,
             _ => return Err(RuntimeError::General("expected a number".into()).into()),

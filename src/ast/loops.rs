@@ -69,11 +69,10 @@ pub trait Range<T> {
 
 impl Range<f64> for (RangeBound<f64>, RangeBound<f64>) {
     fn iterate(&self, val: &mut f64) {
-        println!("values are {:?}", self);
         if self.0.value() < self.1.value() {
             *val += 1f64;
         } else if self.0.value() > self.1.value() {
-            *val += 1f64;
+            *val -= 1f64;
         }
     }
 
@@ -85,7 +84,8 @@ impl Range<f64> for (RangeBound<f64>, RangeBound<f64>) {
                 } else if start > end {
                     i >= *end && i <= *start
                 } else {
-                    i == *start
+                    let error_margin = f64::EPSILON;
+                    (i - *start).abs() < error_margin
                 }
             }
             (RangeBound::Inclusive(start), RangeBound::Exclusive(end)) => {
@@ -94,7 +94,8 @@ impl Range<f64> for (RangeBound<f64>, RangeBound<f64>) {
                 } else if start > end {
                     i < *end && i >= *start
                 } else {
-                    i == *start
+                    let error_margin = f64::EPSILON;
+                    (i - *start).abs() < error_margin
                 }
             }
             (RangeBound::Exclusive(start), RangeBound::Inclusive(end)) => {
@@ -103,7 +104,8 @@ impl Range<f64> for (RangeBound<f64>, RangeBound<f64>) {
                 } else if end < start {
                     i >= *end && i < *start
                 } else {
-                    i == *end
+                    let error_margin = f64::EPSILON;
+                    (i - *end).abs() < error_margin
                 }
             }
             (RangeBound::Exclusive(start), RangeBound::Exclusive(end)) => {

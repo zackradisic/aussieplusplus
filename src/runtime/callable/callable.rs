@@ -7,7 +7,7 @@ use crate::runtime::{Interpreter, Value};
 use super::Function;
 
 pub trait AussieCallable {
-    fn call(&self, interpreter: &mut Interpreter, args: &Vec<Value>) -> Result<Value>;
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value>;
     fn arity(&self) -> u8;
     fn name(&self) -> Rc<String>;
 }
@@ -18,7 +18,7 @@ pub enum Callable {
 }
 
 impl AussieCallable for Callable {
-    fn call(&self, interpreter: &mut Interpreter, args: &Vec<Value>) -> Result<Value> {
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value> {
         match self {
             Callable::Function(func) => func.call(interpreter, args),
         }

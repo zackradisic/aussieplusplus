@@ -72,9 +72,6 @@ impl<'a> Iterator for UpsideDown<'a> {
     type Item = char;
 
     fn next(&mut self) -> Option<char> {
-        match self.src.next() {
-            None => None,
-            Some(v) => Some(rightside_up(v)),
-        }
+        self.src.next().map(rightside_up)
     }
 }

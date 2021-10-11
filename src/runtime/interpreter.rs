@@ -27,6 +27,12 @@ pub struct Interpreter<'a> {
     env: Rc<RefCell<Environment>>,
 }
 
+impl<'a> Default for Interpreter<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> Interpreter<'a> {
     pub fn new() -> Self {
         Self {
@@ -50,7 +56,7 @@ impl<'a> Interpreter<'a> {
         use std::borrow::BorrowMut;
         let w = self.writer.borrow_mut();
         if let Some(w) = w {
-            let _ = write!(w, "{}\n", args).unwrap();
+            let _ = writeln!(w, "{}", args).unwrap();
         }
         stdout().write_fmt(args).unwrap();
     }
@@ -167,9 +173,9 @@ impl<'a> Interpreter<'a> {
         }
     }
 
-    fn execute_for_loop(&mut self, for_loop: &Box<ForLoop>) -> Result<Exit> {
+    fn execute_for_loop(&mut self, for_loop: &ForLoop) -> Result<Exit> {
         let mut env = Environment::new_with_enclosing(self.env());
-        let start = match self.evaluate(&for_loop.range.0.expr())? {
+        let start = match self.evaluate(for_loop.range.0.expr())? {
             Value::Number(n) => n,
             other => {
                 return Err(ParseError::InvalidRange(
@@ -180,7 +186,7 @@ impl<'a> Interpreter<'a> {
                 .into())
             }
         };
-        let end = match self.evaluate(&for_loop.range.1.expr())? {
+        let end = match self.evaluate(for_loop.range.1.expr())? {
             Value::Number(n) => n,
             other => {
                 let line = for_loop.var.line();
@@ -213,11 +219,7 @@ impl<'a> Interpreter<'a> {
         Ok(None)
     }
 
-    pub fn execute_block(
-        &mut self,
-        stmts: &Vec<Stmt>,
-        env: Rc<RefCell<Environment>>,
-    ) -> Result<Exit> {
+    pub fn execute_block(&mut self, stmts: &[Stmt], env: Rc<RefCell<Environment>>) -> Result<Exit> {
         let previous = mem::replace(&mut self.env, env);
 
         for stmt in stmts {
@@ -286,11 +288,7 @@ impl<'a> Interpreter<'a> {
                     (UnaryOp::Bang, right) => Ok(Value::Bool(!Self::is_truthy(&right))),
                     (UnaryOp::Minus, Value::Number(right)) => Ok(Value::Number(right * -1f64)),
                     _ => {
-                        return Err(RuntimeError::new_syntax(
-                            "invalid unary operation",
-                            expr.line(),
-                        )
-                        .into())
+                        Err(RuntimeError::new_syntax("invalid unary operation", expr.line()).into())
                     }
                 }
             }
@@ -302,9 +300,9 @@ impl<'a> Interpreter<'a> {
 
     fn evaluate_call(
         &mut self,
-        expr_callee: &Box<ExprNode>,
+        expr_callee: &ExprNode,
         token: &Token,
-        params: &Vec<ExprNode>,
+        params: &[ExprNode],
     ) -> Result<Value> {
         let callee = self.evaluate(expr_callee)?;
 
@@ -329,13 +327,13 @@ impl<'a> Interpreter<'a> {
 
     fn evaluate_binary(
         &mut self,
-        left_expr: &Box<ExprNode>,
+        left_expr: &ExprNode,
         op: &BinaryOp,
-        right_expr: &Box<ExprNode>,
+        right_expr: &ExprNode,
     ) -> Result<Value> {
         let line = left_expr.line();
-        let a = self.evaluate(&left_expr)?;
-        let b = self.evaluate(&right_expr)?;
+        let a = self.evaluate(left_expr)?;
+        let b = self.evaluate(right_expr)?;
 
         match op {
             BinaryOp::Plus => match (a, b) {
@@ -385,7 +383,7 @@ impl<'a> Interpreter<'a> {
 impl<'a> Interpreter<'a> {
     fn is_truthy(val: &Value) -> bool {
         match val {
-            Value::Bool(b) => b.clone(),
+            Value::Bool(b) => *b,
             Value::Nil => false,
             _ => true,
         }
@@ -400,7 +398,7 @@ impl<'a> Interpreter<'a> {
         }
 
         match (a, b) {
-            (Value::Number(a), Value::Number(b)) => a == b,
+            (Value::Number(a), Value::Number(b)) => (a - b).abs() < f64::EPSILON,
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Bool(a), Value::Bool(b)) => a == b,
             _ => false,

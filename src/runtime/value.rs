@@ -25,7 +25,7 @@ impl From<Value> for String {
             }
             Value::Nil => format!("{}", Kind::BuggerAll),
             Value::Number(n) => format!("{}", n),
-            Value::String(s) => s.clone(),
+            Value::String(s) => s,
             Value::Callable(c) => format!("{}", c),
         }
     }

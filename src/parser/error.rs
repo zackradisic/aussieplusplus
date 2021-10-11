@@ -1,9 +1,6 @@
 use thiserror::Error;
 
-use crate::{
-    runtime::Value,
-    token::{Kind, Token},
-};
+use crate::token::{Kind, Token};
 
 #[derive(Error, Debug)]
 pub enum ParseError {

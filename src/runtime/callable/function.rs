@@ -16,7 +16,7 @@ pub enum Function {
 }
 
 impl AussieCallable for Function {
-    fn call(&self, interpreter: &mut Interpreter, args: &Vec<Value>) -> Result<Value> {
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value> {
         match self {
             Function::UserDefined(func) => func.call(interpreter, args),
             Function::BuiltIn(built_in) => built_in.call(interpreter, args),
@@ -60,18 +60,17 @@ impl UserDefined {
 }
 
 impl AussieCallable for UserDefined {
-    fn call(&self, interpreter: &mut Interpreter, args: &Vec<Value>) -> Result<Value> {
+    fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value> {
         let mut env = Environment::new_with_enclosing(self.env.clone());
 
         for (parameter, value) in self.decl.params.iter().zip(args.iter()) {
             env.define(parameter.name(), value.clone());
         }
 
-        match interpreter.execute_block(&self.decl.body, Rc::new(RefCell::new(env)))? {
-            Some(ExitKind::Return(val)) => {
-                return Ok(val);
-            }
-            _ => {}
+        if let Some(ExitKind::Return(val)) =
+            interpreter.execute_block(&self.decl.body, Rc::new(RefCell::new(env)))?
+        {
+            return Ok(val);
         }
 
         Ok(Value::Nil)
