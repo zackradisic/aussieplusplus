@@ -380,6 +380,17 @@ pub fn test_operators() {
     );
 
     test_lexing(
+        "5 % 10",
+        vec![
+            Token::new(Kind::Number(5f64), 1),
+            Token::new(Kind::Modulo, 1),
+            Token::new(Kind::Number(10f64), 1),
+            Token::new(Kind::EOF, 1),
+        ],
+        false,
+    );
+
+    test_lexing(
         "!Yeah, Nah",
         vec![
             Token::new(Kind::Bang, 1),

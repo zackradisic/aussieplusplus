@@ -540,4 +540,18 @@ fn test_parse_binary_op() {
             ))
         );
     });
+
+    test_parse("1 % 2;", |stmts| {
+        assert_eq!(
+            stmts[0],
+            Stmt::Expr(ExprNode::new(
+                Expr::Binary(
+                    Box::new(ExprNode::new(Expr::Literal(1.into()), 1)),
+                    BinaryOp::Modulo,
+                    Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
+                ),
+                1
+            ))
+        );
+    });
 }

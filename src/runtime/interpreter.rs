@@ -347,6 +347,10 @@ impl<'a> Interpreter<'a> {
                 )
                 .into()),
             },
+            BinaryOp::Modulo => {
+                let (a, b) = self.unwrap_nums(a, b, line)?;
+                Ok(Value::Number(a % b))
+            }
             BinaryOp::Minus => {
                 let (a, b) = self.unwrap_nums(a, b, line)?;
                 Ok(Value::Number(a - b))

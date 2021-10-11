@@ -50,6 +50,7 @@ impl<'a, T: Source> Lexer<T> {
         };
 
         let kind: Kind = match ch {
+            '%' => Kind::Modulo,
             '~' => Kind::Tilde,
             '?' => Kind::QuestionMark,
             '[' => Kind::LeftBracket,

@@ -22,6 +22,7 @@ impl Token {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
+    Modulo,         // %
     Tilde,          // ~
     QuestionMark,   // ?
     LeftBoomerang,  // <
@@ -70,6 +71,7 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::Modulo => "%",
             Kind::MateFuckThis => "mate fuck this",
             Kind::LeftBracket => "[",
             Kind::RightBracket => "]",

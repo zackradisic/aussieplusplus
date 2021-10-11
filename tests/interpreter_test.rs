@@ -258,6 +258,8 @@ fn test_ops() {
     test_code("gimme 5 <= 2;", "Yeah, nah");
     test_code("gimme 5 == 2;", "Yeah, nah");
     test_code("gimme 5 != 2;", "Nah, yeah");
+    test_code("gimme 4 % 2;", "0");
+    test_code("gimme 5 % 2;", "1");
 
     test_code("gimme ((5 + 5) / 2) * 2;", "10");
 

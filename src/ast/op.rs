@@ -30,6 +30,7 @@ pub enum BinaryOp {
     LessEqual,
     Greater,
     GreaterEqual,
+    Modulo,
 }
 
 impl From<Kind> for Option<BinaryOp> {
@@ -45,6 +46,7 @@ impl From<Kind> for Option<BinaryOp> {
             Kind::LTE => Some(BinaryOp::LessEqual),
             Kind::RightBoomerang => Some(BinaryOp::Greater),
             Kind::GTE => Some(BinaryOp::GreaterEqual),
+            Kind::Modulo => Some(BinaryOp::Modulo),
             _ => None,
         }
     }
@@ -63,6 +65,7 @@ impl Display for BinaryOp {
             Self::LessEqual => write!(f, "<="),
             Self::Greater => write!(f, ">"),
             Self::GreaterEqual => write!(f, ">="),
+            Self::Modulo => write!(f, "%"),
         }
     }
 }

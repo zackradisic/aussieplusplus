@@ -400,7 +400,10 @@ impl Parser {
         let mut left = self.unary()?;
         let line = left.line();
 
-        while matches!(self.peek().kind(), Kind::Slash | Kind::Asterisk) {
+        while matches!(
+            self.peek().kind(),
+            Kind::Slash | Kind::Asterisk | Kind::Modulo
+        ) {
             let op: Option<BinaryOp> = self.advance().kind().into();
             let right = self.unary()?;
 
