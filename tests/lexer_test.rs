@@ -9,13 +9,11 @@ fn test_lexing_with_src<T: Source>(expected_tokens: Vec<Token>, expected_error: 
 
     assert_eq!(had_error, expected_error);
     {
-        let mut i = 0;
-        for token in &tokens {
+        for (i, token) in tokens.iter().enumerate() {
             if &expected_tokens[i] != token {
                 println!("expected: {:?} but got {:?}", expected_tokens[i], token);
             }
             assert_eq!(expected_tokens[i].clone(), token.clone());
-            i += 1;
         }
     }
     assert_eq!(tokens, expected_tokens);

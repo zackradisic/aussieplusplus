@@ -11,7 +11,7 @@ use aussie_plus_plus::{
 
 fn test_parse<T>(source: &str, check_fn: T)
 where
-    T: FnOnce(Vec<Stmt>) -> (),
+    T: FnOnce(Vec<Stmt>),
 {
     let mut lex = lexer::Lexer::new(source::Regular::new(source.chars()));
     let (tokens, _) = lex.lex();
