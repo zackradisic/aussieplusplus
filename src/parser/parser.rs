@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error, Result};
 
 use crate::ast::{
-    FnDecl, ForLoop, Ident, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
+    FnDecl, ForLoop, Ident, If, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
 };
 use crate::runtime::Value;
 use crate::{
@@ -29,7 +29,7 @@ macro_rules! match_toks {
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
-    // To discriminate closing boomerang vs. gt
+    // To help discriminate boomerangs vs. gt/lt
     inside_block: usize,
 }
 
@@ -198,7 +198,7 @@ impl Parser {
                 self.inside_block -= 1;
                 ret
             },
-            Kind::YaReckon => self.condition_statement(),
+            (Kind::YaReckon | Kind::Whatabout) => self.condition_statement(),
             Kind::Gimme => self.print_statement(),
             Kind::Bail => self.return_statement(),
             Kind::MateFuckThis => {
@@ -242,9 +242,14 @@ impl Parser {
         match kind {
             Kind::QuestionMark => {
                 self.consume(Kind::QuestionMark)?;
-                let then = self.statement()?;
+                let then = Box::new(self.statement()?);
+                let mut else_: Option<Box<Stmt>> = None;
 
-                Ok(Stmt::If(cond, Box::new(then)))
+                if self.peek().kind() == Kind::Whatabout {
+                    else_ = Some(Box::new(self.statement()?));
+                }
+
+                Ok(Stmt::If(If::new(cond, then, else_)))
             }
             Kind::Isa => {
                 self.consume(Kind::Isa)?;

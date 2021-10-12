@@ -56,6 +56,7 @@ pub enum Kind {
     Isa,            // (is a)
     BuggerAll,      // Bugger all (nil/null)
     ChookBickey,    // Chook bickey (end of program)
+    Whatabout,      // Whatabout (else)
     Walkabout,      // Walkabout (for loop)
     GdayMate,       // G'DAY MATE! (program start)
     IReckon,        // I reckon (var decl)
@@ -107,6 +108,7 @@ impl Kind {
             Kind::Gimme => "gimme",
             Kind::BuggerAll => "bugger all",
             Kind::ChookBickey => "chook bickey", // Chook bickey (end of program)
+            Kind::Whatabout => "whatabout",      // Whatabout (else)
             Kind::Walkabout => "walkabout",      // Walkabout (for loop)
             Kind::GdayMate => "g'day mate!",     // G'DAY MATE! (program start)
             Kind::IReckon => "i reckon",         // I reckon (var decl)

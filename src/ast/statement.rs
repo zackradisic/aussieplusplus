@@ -1,12 +1,12 @@
 use crate::token::Token;
 
-use super::{ExprNode, FnDecl, ForLoop, Ident, Match, WhileLoop};
+use super::{ExprNode, FnDecl, ForLoop, Ident, If, Match, WhileLoop};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Stmt {
     Expr(ExprNode),
     Block(Vec<Stmt>),
-    If(ExprNode, Box<Stmt>),
+    If(If),
     Match(Match),
     VarDecl(Ident, Option<ExprNode>),
     FnDecl(FnDecl),

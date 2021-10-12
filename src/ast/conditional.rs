@@ -6,6 +6,19 @@ use crate::{
 use super::{ExprNode, Ident, Stmt, Var};
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct If {
+    pub cond: ExprNode,
+    pub then: Box<Stmt>,
+    pub else_: Option<Box<Stmt>>,
+}
+
+impl If {
+    pub fn new(cond: ExprNode, then: Box<Stmt>, else_: Option<Box<Stmt>>) -> Self {
+        Self { cond, then, else_ }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct Match {
     pub val: ExprNode,
     pub branches: Vec<MatchBranch>,

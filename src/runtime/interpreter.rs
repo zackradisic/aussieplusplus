@@ -10,7 +10,7 @@ use std::{
 };
 
 use crate::{
-    ast::{BinaryOp, Expr, ExprNode, ForLoop, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp},
+    ast::{BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp},
     parser::error::ParseError,
     runtime::AussieCallable,
     token::Token,
@@ -140,14 +140,17 @@ impl<'a> Interpreter<'a> {
 
                 Ok(None)
             }
-            Stmt::If(cond, then) => {
+            Stmt::If(If { cond, then, else_ }) => {
                 let val = self.evaluate(cond)?;
 
                 if Self::is_truthy(&val) {
-                    match self.execute_stmt(then)? {
-                        None => {}
-                        Some(exit) => return Ok(Some(exit)),
-                    };
+                    if let Some(exit) = self.execute_stmt(then)? {
+                        return Ok(Some(exit));
+                    }
+                } else if let Some(else_) = else_ {
+                    if let Some(exit) = self.execute_stmt(else_)? {
+                        return Ok(Some(exit));
+                    }
                 }
 
                 Ok(None)
