@@ -10,7 +10,10 @@ use std::{
 };
 
 use crate::{
-    ast::{BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp},
+    ast::{
+        BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp,
+        WhileLoop,
+    },
     parser::error::ParseError,
     runtime::AussieCallable,
     token::Token,
@@ -20,7 +23,7 @@ use super::{
     environment::Environment,
     error::RuntimeError,
     exit::{Exit, ExitKind},
-    BuiltIn, Callable, Function, RuntimePartialEq, UserDefined, Value,
+    BuiltIn, Callable, RuntimePartialEq, UserDefined, Value,
 };
 
 pub struct Interpreter<'a> {
@@ -113,12 +116,7 @@ impl<'a> Interpreter<'a> {
                 Ok(None)
             }
             Stmt::Break(tok) => Ok(Some(ExitKind::Break(tok.line()))),
-            Stmt::While(_while_loop) => {
-                todo!();
-                // let mut env = Environment::new_with_enclosing(Some(self.env()));
-                // let name = while_loop.var.name();
-                // env.define(name.clone(), value)
-            }
+            Stmt::While(while_loop) => self.execute_while_loop(while_loop),
             Stmt::For(for_loop) => self.execute_for_loop(for_loop),
             Stmt::Print(expr) => {
                 let val = self.evaluate(expr)?;
@@ -193,6 +191,37 @@ impl<'a> Interpreter<'a> {
             }
             _ => Ok(None),
         }
+    }
+
+    fn execute_while_loop(&mut self, while_loop: &WhileLoop) -> Result<Exit> {
+        match while_loop.cond.literal() {
+            Some(literal) => {
+                if !Self::is_truthy(literal) {
+                    loop {
+                        for stmt in &while_loop.body {
+                            match self.execute_stmt(stmt)? {
+                                None => {}
+                                Some(ExitKind::Break(_)) => return Ok(None),
+                                ret => return Ok(ret),
+                            }
+                        }
+                    }
+                }
+            }
+            None => {
+                while !Self::is_truthy(&self.evaluate(&while_loop.cond)?) {
+                    for stmt in &while_loop.body {
+                        match self.execute_stmt(stmt)? {
+                            None => {}
+                            Some(ExitKind::Break(_)) => return Ok(None),
+                            ret => return Ok(ret),
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(None)
     }
 
     fn execute_for_loop(&mut self, for_loop: &ForLoop) -> Result<Exit> {

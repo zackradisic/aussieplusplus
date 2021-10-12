@@ -21,18 +21,9 @@ impl Default for Environment {
 
 impl Environment {
     pub fn new_with_enclosing(inner: Rc<RefCell<Environment>>) -> Self {
-        let mut env = Self {
+        Self {
             inner: Inner::with_enclosing(inner),
-        };
-
-        // env.define(
-        //     "clock".to_string(),
-        //     Value::Callable(RloxCallable::Function(Function::BuiltIn(BuiltIn::Clock(
-        //         Clock {},
-        //     )))),
-        // );
-
-        env
+        }
     }
 
     pub fn print_values(&self) {
@@ -75,14 +66,13 @@ impl Inner {
     }
 
     fn get(&self, name: &String) -> Option<Value> {
-        match self.values.get(name).cloned() {
+        match self.values.get(name) {
             None => match &self.enclosing {
                 None => None,
                 Some(enclosing) => enclosing.borrow().get(name),
             },
-            Some(val) => Some(val),
+            Some(val) => Some(val.clone()),
         }
-        // self.values.get(name).cloned()
     }
 
     fn assign(&mut self, name: Rc<String>, value: Value) -> bool {

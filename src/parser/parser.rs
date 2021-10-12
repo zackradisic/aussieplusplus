@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, Result};
 
 use crate::ast::{
     FnDecl, ForLoop, Ident, If, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
