@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Error, Result};
 
 use crate::ast::{
     FnDecl, ForLoop, Ident, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
@@ -42,19 +42,27 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Vec<Stmt> {
+    pub fn parse(&mut self) -> Result<Vec<Stmt>> {
         let mut stmts: Vec<Stmt> = Vec::new();
+        let mut had_error = false;
 
         while !self.is_at_end() {
             match self.declaration() {
                 Ok(stmt) => {
                     stmts.push(stmt);
                 }
-                Err(e) => eprintln!("{:?}", e),
+                Err(e) => {
+                    had_error = true;
+                    eprintln!("{:?}", e);
+                }
             }
         }
 
-        stmts
+        if had_error {
+            Err(anyhow!("failed to parse"))
+        } else {
+            Ok(stmts)
+        }
     }
 
     fn declaration(&mut self) -> Result<Stmt> {
