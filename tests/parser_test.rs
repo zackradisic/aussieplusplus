@@ -1,7 +1,7 @@
 use aussie_plus_plus::{
     ast::{
-        BinaryOp, Expr, ExprNode, ForLoop, Ident, Match, MatchBranch, Pattern, RangeBound, Stmt,
-        UnaryOp, Var,
+        BinaryOp, Expr, ExprNode, ForLoop, Ident, If, Match, MatchBranch, Pattern, RangeBound,
+        Stmt, UnaryOp, Var,
     },
     lexer::{lexer, source},
     parser::parser,
@@ -167,11 +167,18 @@ fn test_parse_block() {
                 ),
                 1,
             );
-            let block = Box::new(Stmt::Block(vec![
+            let then = Box::new(Stmt::Block(vec![
                 Stmt::VarDecl(("y", 2).into(), None),
                 Stmt::VarDecl(("z", 3).into(), None),
             ]));
-            assert_eq!(stmts[0], Stmt::If(cond, block),);
+            assert_eq!(
+                stmts[0],
+                Stmt::If(If {
+                    cond,
+                    then,
+                    else_: None
+                }),
+            );
         },
     );
 
@@ -252,8 +259,8 @@ fn test_parse_if() {
     test_parse("ya reckon 5 == 2 ? nah, yeah;", |stmts| {
         assert_eq!(
             stmts[0],
-            Stmt::If(
-                ExprNode::new(
+            Stmt::If(If {
+                cond: ExprNode::new(
                     Expr::Binary(
                         Box::new(ExprNode::new(Expr::Literal(5.into()), 1)),
                         BinaryOp::Equal,
@@ -261,8 +268,9 @@ fn test_parse_if() {
                     ),
                     1
                 ),
-                Box::new(Stmt::Expr(ExprNode::new(Expr::Literal(true.into()), 1)))
-            )
+                then: Box::new(Stmt::Expr(ExprNode::new(Expr::Literal(true.into()), 1))),
+                else_: None,
+            })
         );
     });
 }
