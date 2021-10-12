@@ -45,6 +45,7 @@ fn main() {
             panic!("Failed to interpret: {}", e);
         }
 
+        println!("CHEERS C***!");
         return;
     }
 
@@ -68,5 +69,7 @@ fn main() {
         if let Err(e) = i.interpret(stmts) {
             panic!("Failed to interpret: {}", e);
         }
+
+        println!("CHEERS C***!");
     }
 }

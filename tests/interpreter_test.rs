@@ -33,6 +33,30 @@ fn test_code(src: &str, expected: &str) {
     }
 }
 #[test]
+fn test_while_loop() {
+    test_code(
+        "
+        i reckon x = 0;
+        i reckon i'll have a walkabout until (x > 3) <
+            gimme x;
+            x = x + 1;
+        >",
+        "0\n1\n2\n3",
+    );
+
+    test_code(
+        "
+        i reckon i'll have a walkabout until (Yeah, nah) <
+            gimme \"bloody oath!\";
+            mate fuck this;
+        >
+        gimme \"fair dinkum\";
+        ",
+        "bloody oath!\nfair dinkum",
+    );
+}
+
+#[test]
 fn test_early_exit() {
     test_code(
         "i reckon x = 5;

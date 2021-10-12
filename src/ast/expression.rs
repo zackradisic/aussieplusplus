@@ -23,6 +23,10 @@ impl ExprNode {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
+
+    pub fn literal(&self) -> Option<&Value> {
+        self.expr.literal()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -35,4 +39,13 @@ pub enum Expr {
     Var(Var),
     Assign(Var, Box<ExprNode>),
     Call(Box<ExprNode>, Token, Vec<ExprNode>),
+}
+
+impl Expr {
+    pub fn literal(&self) -> Option<&Value> {
+        match self {
+            Self::Literal(val) => Some(val),
+            _ => None,
+        }
+    }
 }

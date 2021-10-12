@@ -19,14 +19,13 @@ impl ForLoop {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct WhileLoop {
-    pub var: Var,
     pub cond: ExprNode,
     pub body: Vec<Stmt>,
 }
 
 impl WhileLoop {
-    pub fn new(var: Var, cond: ExprNode, body: Vec<Stmt>) -> Self {
-        Self { var, cond, body }
+    pub fn new(cond: ExprNode, body: Vec<Stmt>) -> Self {
+        Self { cond, body }
     }
 }
 

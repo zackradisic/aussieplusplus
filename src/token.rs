@@ -57,6 +57,7 @@ pub enum Kind {
     BuggerAll,      // Bugger all (nil/null)
     ChookBickey,    // Chook bickey (end of program)
     Whatabout,      // Whatabout (else)
+    IllHaveA,       //  I'll Have a
     Walkabout,      // Walkabout (for loop)
     GdayMate,       // G'DAY MATE! (program start)
     IReckon,        // I reckon (var decl)
@@ -106,6 +107,7 @@ impl Kind {
             Kind::And => "&&",
             Kind::Or => "||",
             Kind::Gimme => "gimme",
+            Kind::IllHaveA => "i'll have a",
             Kind::BuggerAll => "bugger all",
             Kind::ChookBickey => "chook bickey", // Chook bickey (end of program)
             Kind::Whatabout => "whatabout",      // Whatabout (else)

@@ -2,6 +2,7 @@ use anyhow::{anyhow, Error, Result};
 
 use crate::ast::{
     FnDecl, ForLoop, Ident, If, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
+    WhileLoop,
 };
 use crate::runtime::Value;
 use crate::{
@@ -76,12 +77,17 @@ impl Parser {
     fn declaration(&mut self) -> Result<Stmt> {
         match_toks!(self,
             _ => self.statement(),
-            Kind::IReckon => self.var_decl(),
+            Kind::IReckon => self.var_decl_or_loop(),
             Kind::HardYakkaFor => self.fn_decl()
         )
     }
 
-    fn var_decl(&mut self) -> Result<Stmt> {
+    fn var_decl_or_loop(&mut self) -> Result<Stmt> {
+        if self.match_tok(Kind::IllHaveA) {
+            self.consume(Kind::Walkabout)?;
+            return self.loops(None);
+        }
+
         let ident = self.consume_ident()?;
 
         match_toks!(self,
@@ -101,7 +107,7 @@ impl Parser {
             },
             Kind::Isa => {
                 self.consume(Kind::Walkabout)?;
-                self.loops(ident)
+                self.loops(Some(ident))
             }
         )
     }
@@ -142,12 +148,14 @@ impl Parser {
         Ok(Stmt::FnDecl(FnDecl::new(name, params, body)))
     }
 
-    fn loops(&mut self, ident: Ident) -> Result<Stmt> {
+    fn loops(&mut self, ident: Option<Ident>) -> Result<Stmt> {
         match_toks!(self,
             _other => {
+                println!("_other: {}", _other);
                 todo!()
             },
             Kind::From => {
+                let ident = ident.unwrap();
                 let start = match_toks!(self,
                     k =>
                     return Err(ParseError::ExpectedTokens(
@@ -185,7 +193,15 @@ impl Parser {
 
                 Ok(Stmt::For(Box::new(ForLoop::new(ident.into(), (start, end), vec![body]))))
             },
-            Kind::Until => todo!()
+            Kind::Until => {
+                self.consume(Kind::LeftParen)?;
+                let cond = self.expression()?;
+                self.consume(Kind::RightParen)?;
+
+                let body = self.statement()?;
+
+                Ok(Stmt::While(Box::new(WhileLoop::new(cond, vec![body]))))
+            }
         )
     }
 
