@@ -1,0 +1,9 @@
+G'DAY MATE!
+
+IMPOHT ME FUNC GimmeTime;
+
+THE HARD YAKKA FOR gimmeTimeMate IS () <
+    GIMME "Oi mate, the time in Melbourne is: " + GimmeTime();
+>
+
+gimmeTimeMate();

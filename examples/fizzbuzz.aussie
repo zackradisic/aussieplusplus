@@ -1,0 +1,11 @@
+G'DAY MATE!
+
+THE HARD YAKKA FOR FuckWit IS (n) <
+    I RECKON x IS A WALKABOUT FROM [0 TO n) <
+        YA RECKON x % 15 == 0 ? GIMME "FuckWit";
+        WHATABOUT x % 3  == 0 ? GIMME "Fuck";
+        WHATABOUT x % 5  == 0 ? GIMME "Wit";
+	>
+>
+
+FuckWit(100);
