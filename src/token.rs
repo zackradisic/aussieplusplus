@@ -57,7 +57,7 @@ pub enum Kind {
     BuggerAll,      // Bugger all (nil/null)
     ChookBickey,    // Chook bickey (end of program)
     Walkabout,      // Walkabout (for loop)
-    BlimeyMate,     // Blimey mate (program start)
+    GdayMate,       // G'DAY MATE! (program start)
     IReckon,        // I reckon (var decl)
     YaReckon,       // Ya reckon (analogous to if)
     HardYakkaFor,   // Hard yakka for (function decl)
@@ -108,7 +108,7 @@ impl Kind {
             Kind::BuggerAll => "bugger all",
             Kind::ChookBickey => "chook bickey", // Chook bickey (end of program)
             Kind::Walkabout => "walkabout",      // Walkabout (for loop)
-            Kind::BlimeyMate => "blimey mate",   // Blimey mate (program start)
+            Kind::GdayMate => "g'day mate!",     // G'DAY MATE! (program start)
             Kind::IReckon => "i reckon",         // I reckon (var decl)
             Kind::YaReckon => "ya reckon",       // Ya reckon (analogous to if)
             Kind::HardYakkaFor => "the hard yakka for", // Hard yakka for (function decl)

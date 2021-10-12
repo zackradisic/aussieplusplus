@@ -13,10 +13,11 @@ fn test_parse<T>(source: &str, check_fn: T)
 where
     T: FnOnce(Vec<Stmt>),
 {
+    let source = "G'DAY MATE! ".to_owned() + source;
     let mut lex = lexer::Lexer::new(source::Regular::new(source.chars()));
     let (tokens, _) = lex.lex();
     let mut parser = parser::Parser::new(tokens);
-    let stmts = parser.parse();
+    let stmts = parser.parse().unwrap();
 
     check_fn(stmts)
 }

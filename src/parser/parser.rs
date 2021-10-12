@@ -46,6 +46,14 @@ impl Parser {
         let mut stmts: Vec<Stmt> = Vec::new();
         let mut had_error = false;
 
+        match self.consume_program_start() {
+            Ok(_) => {}
+            Err(e) => {
+                had_error = true;
+                eprintln!("{:?}", e)
+            }
+        }
+
         while !self.is_at_end() {
             match self.declaration() {
                 Ok(stmt) => {
@@ -561,6 +569,17 @@ impl Parser {
             }
             k => Err(ParseError::UnexpectedToken(Kind::Ident("any".into()), k, tok.line()).into()),
         }
+    }
+
+    fn consume_program_start(&mut self) -> Result<()> {
+        while !self.is_at_end() {
+            if self.match_tok(Kind::GdayMate) {
+                return Ok(());
+            }
+            self.advance();
+        }
+
+        Err(ParseError::ExpectProgramStart.into())
     }
 
     fn match_tok(&mut self, kind: Kind) -> bool {

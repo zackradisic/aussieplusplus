@@ -22,4 +22,6 @@ pub enum ParseError {
     InvalidRange(usize, String, String),
     #[error("[line {0}] EXPECTED NUMBER, STRING, BOOLEAN, NIL, OR IDENTIFIER BUT GOT '{1}'")]
     ExpectPrimary(usize, Kind),
+    #[error("YA DAFT BUGGER! YA DIDN'T WRITE \"G'DAY MATE!\" TO START PROGRAM!!")]
+    ExpectProgramStart,
 }

@@ -5,17 +5,17 @@ use aussie_plus_plus::{
 };
 
 fn test_code(src: &str, expected: &str) {
-    let expected = if expected == "" {
+    let expected = if expected.is_empty() {
         expected.to_owned()
     } else {
         expected.to_owned() + "\n"
     };
-    let mut s = "print ".to_string();
+    let mut s = "G'DAY MATE! ".to_string();
     s.push_str(src);
-    let mut lex = Lexer::new(source::Regular::new(src.chars()));
+    let mut lex = Lexer::new(source::Regular::new(s.chars()));
     let (tokens, _) = lex.lex();
     let mut parser = Parser::new(tokens);
-    let stmts = parser.parse();
+    let stmts = parser.parse().unwrap();
 
     let mut buf: Vec<u8> = Vec::with_capacity(128);
     let mut iptr = Interpreter::new_with_writer(&mut buf);

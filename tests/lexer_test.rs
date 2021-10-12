@@ -3,7 +3,8 @@ use aussie_plus_plus::{
     token::{Kind, Token},
 };
 
-fn test_lexing_with_src<T: Source>(expected_tokens: Vec<Token>, expected_error: bool, iter: T) {
+fn test_lexing_with_src<T: Source>(mut expected_tokens: Vec<Token>, expected_error: bool, iter: T) {
+    expected_tokens.insert(0, Token::new(Kind::GdayMate, 1));
     let mut lexer = lexer::Lexer::new(iter);
     let (tokens, had_error) = lexer.lex();
 
@@ -28,6 +29,7 @@ fn test_lexing_upside_down(src: &str, expected_tokens: Vec<Token>, expected_erro
 }
 
 fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
+    let src = "G'day mate! ".to_owned() + src;
     test_lexing_with_src(
         expected_tokens,
         expected_error,
@@ -51,21 +53,21 @@ pub fn test_lex_is() {
 #[test]
 pub fn test_upside_down() {
     test_lexing_upside_down(
-        "ᄅƖ = z NOʞƆƎɹ I        
-        ⅄ƎʞƆIq ʞOOHƆ        
-        0Ɩ = ʎ NOʞƆƎɹ I        
-        ϛ = x NOʞƆƎɹ I        
-        Ǝ┴∀W ⅄ƎWI˥q",
+        "⅄ƎʞƆIq ʞOOHƆ
+        ;0Ɩ = ʎ uoʞɔǝɹ ᴉ
+        ;ϛ = x uoʞɔǝɹ ᴉ
+        ¡Ǝ┴∀W ⅄∀p,פ",
         vec![
-            Token::new(Kind::BlimeyMate, 1),
             Token::new(Kind::IReckon, 2),
             Token::new(Kind::Ident("x".into()), 2),
             Token::new(Kind::Assign, 2),
             Token::new(Kind::Number(5f64), 2),
+            Token::new(Kind::Semicolon, 2),
             Token::new(Kind::IReckon, 3),
             Token::new(Kind::Ident("y".into()), 3),
             Token::new(Kind::Assign, 3),
             Token::new(Kind::Number(10f64), 3),
+            Token::new(Kind::Semicolon, 3),
             Token::new(Kind::ChookBickey, 4),
         ],
         false,
@@ -75,10 +77,9 @@ pub fn test_upside_down() {
 #[test]
 pub fn test_separation() {
     test_lexing(
-        "BLIMEY MATEWALKABOUT",
+        "BUGGERALL",
         vec![
-            Token::new(Kind::Ident("BLIMEY".into()), 1),
-            Token::new(Kind::Ident("MATEWALKABOUT".into()), 1),
+            Token::new(Kind::Ident("BUGGERALL".into()), 1),
             Token::new(Kind::EOF, 1),
         ],
         false,
@@ -92,7 +93,7 @@ pub fn test_lex_keyword_casing() {
         Kind::Isa,
         Kind::ChookBickey,
         Kind::Walkabout,
-        Kind::BlimeyMate,
+        Kind::GdayMate,
         Kind::IReckon,
         Kind::YaReckon,
         Kind::HardYakkaFor,
@@ -160,14 +161,14 @@ pub fn test_lex_hard_yakka() {
 #[test]
 pub fn test_lex_keywords() {
     test_lexing(
-        "BLIMEY MATE
+        "G'DAY MATE!
         I RECKON x = 5
         I RECKON y = 10
         CHOOK BICKEY
         I RECKON z = 12
         ",
         vec![
-            Token::new(Kind::BlimeyMate, 1),
+            Token::new(Kind::GdayMate, 1),
             Token::new(Kind::IReckon, 2),
             Token::new(Kind::Ident("x".into()), 2),
             Token::new(Kind::Assign, 2),
