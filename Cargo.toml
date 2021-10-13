@@ -10,6 +10,7 @@ anyhow = "1.0.44"
 chrono = "0.4.19"
 chrono-tz = "0.6.0"
 itertools = "0.10.1"
+rand = "0.8.4"
 structopt = "0.3.23"
 thiserror = "1.0.29"
 
