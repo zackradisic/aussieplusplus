@@ -1,87 +1,111 @@
+![aussie_plus_plus](assets/code.png)
 # aussie++
 
 Programming language from down under, inspired by [this](https://www.reddit.com/r/ProgrammerHumor/comments/oa8chw/australian_programming_language/) Reddit post.
 
 ## Key Features
-* Boomerangs (angle-brackets) instead of curly braces
-* Pattern matching
-* `NAH, YEAH == true` and `YEAH, NAH == false`
-* Declare variables with `I RECKON x = 420`
-* Other Aussie keywords, CAPITALIZATION is encouraged but not required
+* 🇦🇺 Syntax entirely comprised of Australian lingo and slang
+* 🪃 Wield an Australian's greatest weapon: use boomerangs (angle-brackets) instead of curly braces
+* **True aussie mode**, where uʍop ǝpᴉsdn characters become valid code
 
 ## Example
-```javascript
-BLIMEY MATE
+```
+G'DAY MATE!
 
-I RECKON x = 5;
-I RECKON y = 10;
+THE HARD YAKKA FOR fibonacci IS ( x ) <
+    YA RECKON x <= 1 ? BAIL x;
 
-YA RECKON x == y - 5 <
-	// Pattern matching
-	NAH, YEAH? <
-		bail "dinkum"
-	>
-	YEAH, NAH? <
-		bail "fark"
-	>
-> 
-
-// Declaring a function
-HARD YAKKA FOR fibonacci ( x ) <
-		// If statements
-		YA RECKON x == 0 <
-				bail 0
-		>
-		YA RECKON x == 1 <
-				bail 1
-		>
-
-		bail fibonacci(x - 1) + fibonacci(x - 2)
+	BAIL fibonacci(x - 1) + fibonacci(x - 2);
 >
 
-WALKABOUT (x = 0; x < 5; x = x + 1) <
-
->
-
-CHOOK BICKEY
+GIMME fibonacci(30);
 ```
 
-## Down under mode
-With down under mode enabled, upside down code becomes valid
-syntax.
 
-```javascript
-⅄ƎʞƆIq ʞOOHƆ
+# Language Details
+`aussie++` is a dynamically-typed and interpreted language.
 
-<
+## General
+Programs must start with `G'DAY MATE!` and end with `CHEERS C***!`. You can use `GIMME <something>` to print to console
+```
+G'DAY MATE!
 
-> (Ɩ + x = x ;ϛ > x ;0 = x) ┴∩Oq∀ʞ˥∀M
+// Prints "blimey mate!" to console
+GIMME "blimey mate!";
 
-<
-(ᄅ - x)ᴉɔɔɐuoqᴉɟ + (Ɩ - x)ᴉɔɔɐuoqᴉɟ lᴉɐq		
+CHEERS C***!
+```
 
-<		
-Ɩ lᴉɐq				
-> Ɩ == x NOƆƎɹ ∀⅄		
-<		
-0 lᴉɐq				
-> 0 == x NOƆƎɹ ∀⅄		
-sʇuǝɯǝʇɐʇs ɟI //		
-> ( x ) ᴉɔɔɐuoqᴉɟ ɹOℲ ∀ʞʞ∀⅄ pɹ∀H
-uoᴉʇɔunɟ ɐ ƃuᴉɹɐlɔǝp //
+## Types / Variables
+Declare booleans, numbers, strings and `nil/null` like so:
+```
+// Booleans
+I RECKON thisIsTrue = YEAH, NAH;
+I RECKON thisIsFalse = NAH, YEAH;
 
- <
-<	
-,,ʞɹɐɟ,, lᴉɐq		
-> ¿H∀N 'H∀Ǝ⅄	
-<	
-,,ɯnʞuᴉp,, lᴉɐq		
-> ¿H∀Ǝ⅄ 'H∀N	
-ƃuᴉɥɔʇɐɯ uɹǝʇʇɐԀ //	
-> ϛ - ʎ == x NOƆƎɹ ∀⅄
+// Numbers
+I RECKON lol = 42069;
+I RECKON tinyNum = 0.00001;
+I RECKON negativeNum = -1;
 
-;0Ɩ = ʎ NOƆƎɹ I
-;ϛ = x NOƆƎɹ I
+// Strings
+I RECKON goodStr = "fair dinkum mate!";
 
-Ǝ┴∀W ⅄ƎWI˥q
+// Nil/Null
+I RECKON emptiness = BUGGER ALL;
+```
+
+## Control flow
+`aussie++` supports if statements and pattern matching:
+```go
+// If/else statemets
+YA RECKON 1 == 2 ? <
+	GIMME "fark we broke math!";
+> WHATABOUT NAH, YEAH == YEAH, NAH <
+	GIMME "strewth we broke boolean logic!";
+> WHATABOUT <
+	GIMME "the universe is okay";
+>
+
+// Pattern matching
+YA RECKON randomBeer() is a <
+	"Fosters" ~ GIMME "Flamin' hell!";
+	"Coopers" ~ GIMME "You Beauty!";
+	somethinElse ~ "Yeah, dunno that one: " + somethinElse;
+>
+```
+
+## Loops
+`aussie++` has for and while loops. With for loops the main thing to note is that the ranges are specified using interval notation (`[` or `]` is inclusive, and `(` or `)` is exclusive). You can mix and match.
+```go
+// From 0-100
+I RECKON x IS A WALKABOUT FROM [0, 100] <
+	GIMME x;
+>
+
+// From 0-99
+I RECKON x IS A WALKABOUT FROM [0, 100) <
+	GIMME x;
+>
+```
+
+While loops are similar to what you would find in other languages, except that the loop only executes if the condition is false.
+
+```
+// OI MATE, PAY ATTENTION! THIS LOOP STOPS WHEN I'VE WALKED 3 KM!
+
+I RECKON kmWalked = 0;
+I RECKON I'LL HAVE A WALKABOUT UNTIL (kmWalked > 3) <
+	GIMME "i walked 1 km!";
+	kmWalked = kmWalked + 1;
+>
+GIMME "BLOODY OATH I'M TIRED!";
+```
+
+### Functions
+Define functions like so:
+```
+THE HARD YAKKA FOR gdayMate () IS <
+	GIMME "G'day mate!";
+>
 ```
