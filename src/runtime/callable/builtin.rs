@@ -3,7 +3,11 @@ use std::fmt::Display;
 use std::rc::Rc;
 use std::{thread, time::Duration};
 
-use chrono::{TimeZone, Utc};
+#[cfg(not(target_os = "emscripten"))]
+use chrono::offset::TimeZone;
+#[cfg(not(target_os = "emscripten"))]
+use chrono::Utc;
+
 use rand::prelude::ThreadRng;
 use rand::Rng;
 
@@ -12,6 +16,12 @@ use crate::runtime::{Interpreter, Value};
 
 use super::AussieCallable;
 
+#[cfg(target_os = "emscripten")]
+use std::os::raw::c_char;
+#[cfg(target_os = "emscripten")]
+extern "C" {
+    pub fn aussie_time() -> *mut c_char;
+}
 #[derive(Clone, PartialEq, Debug)]
 pub enum BuiltIn {
     Sleep(Sleep),
@@ -118,13 +128,26 @@ impl Default for Time {
 }
 
 impl AussieCallable for Time {
+    #[cfg(not(target_os = "emscripten"))]
     fn call(&self, _: &mut Interpreter, _: &[Value]) -> anyhow::Result<Value> {
         let utc = Utc::now().naive_utc();
-        let tz = chrono_tz::Australia::Melbourne
-            .from_local_datetime(&utc)
-            .unwrap();
+        let tz = chrono_tz::Australia::Melbourne.from_utc_datetime(&utc);
 
         Ok(Value::String(tz.to_string()))
+    }
+
+    #[cfg(target_os = "emscripten")]
+    fn call(&self, _: &mut Interpreter, _: &[Value]) -> anyhow::Result<Value> {
+        use std::ffi::CString;
+
+        let str = unsafe {
+            CString::from_raw(aussie_time())
+                .to_str()
+                .unwrap()
+                .to_string()
+        };
+
+        Ok(Value::String(str))
     }
 
     fn arity(&self) -> u8 {

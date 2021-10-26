@@ -4,6 +4,8 @@ use crate::token::Kind;
 
 use super::Callable;
 
+pub const MAX_ARITY: usize = 32;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     String(String),

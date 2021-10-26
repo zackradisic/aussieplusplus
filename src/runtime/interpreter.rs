@@ -1,4 +1,5 @@
 use anyhow::Result;
+use arrayvec::ArrayVec;
 use std::{
     cell::RefCell,
     fmt::Arguments,
@@ -23,7 +24,7 @@ use super::{
     environment::Environment,
     error::RuntimeError,
     exit::{Exit, ExitKind},
-    BuiltIn, Callable, RuntimePartialEq, UserDefined, Value,
+    BuiltIn, Callable, RuntimePartialEq, UserDefined, Value, MAX_ARITY,
 };
 
 pub struct Interpreter<'a> {
@@ -68,10 +69,13 @@ impl<'a> Interpreter<'a> {
 
     pub fn interpret(&mut self, stmts: Vec<Stmt>) -> Result<()> {
         for stmt in stmts {
-            match self.execute_stmt(&stmt)? {
-                None => {}
-                Some(ExitKind::Break(line)) => return Err(RuntimeError::InvalidBreak(line).into()),
-                Some(_) => return Ok(()),
+            match self.execute_stmt(&stmt) {
+                Err(e) => eprintln!("{}", e),
+                Ok(None) => {}
+                Ok(Some(ExitKind::Break(line))) => {
+                    return Err(RuntimeError::InvalidBreak(line).into())
+                }
+                Ok(Some(_)) => return Ok(()),
             };
         }
         Ok(())
@@ -95,7 +99,13 @@ impl<'a> Interpreter<'a> {
                 };
                 Ok(None)
             }
-            Stmt::Exit => process::exit(0),
+            Stmt::Exit(fuckinpiker) => {
+                if *fuckinpiker {
+                    process::exit(1)
+                } else {
+                    Ok(Some(ExitKind::Return(Value::Nil)))
+                }
+            }
             Stmt::Return(expr) => match expr {
                 None => Ok(Some(ExitKind::Return(Value::Nil))),
                 Some(val) => Ok(Some(ExitKind::Return(self.evaluate(val)?))),
@@ -300,11 +310,15 @@ impl<'a> Interpreter<'a> {
                 self.env.borrow_mut().assign(var.name(), value.clone());
                 Ok(value)
             }
-            Expr::Var(ref var) => Ok(self
-                .env
-                .borrow()
-                .get(&var.ident().name())
-                .map_or_else(|| Value::Nil, |v| v)),
+            Expr::Var(ref var) => self.env.borrow().get(&var.ident().name()).map_or_else(
+                || {
+                    Err(
+                        RuntimeError::UndefinedVariable(var.line(), (*var.name()).to_string())
+                            .into(),
+                    )
+                },
+                Ok,
+            ),
             Expr::Literal(ref val) => Ok(val.clone()),
             Expr::Grouping(ref expr) => self.evaluate(expr),
             Expr::Unary(op, ref expr) => {
@@ -362,13 +376,15 @@ impl<'a> Interpreter<'a> {
             _ => return Err(RuntimeError::InvalidCallee(token.line()).into()),
         };
 
-        if params.len() != callable.arity().into() {
+        let arity = callable.arity().into();
+        if params.len() != arity {
             return Err(
                 RuntimeError::InvalidArity(token.line(), callable.arity(), params.len()).into(),
             );
         }
 
-        let mut args: Vec<Value> = Vec::with_capacity(params.len());
+        let mut args = Vec::with_capacity(arity);
+        // let mut args = ArrayVec::<Value, MAX_ARITY>::new();
         for arg in params {
             args.push(self.evaluate(arg)?);
         }
@@ -463,7 +479,7 @@ impl<'a> Interpreter<'a> {
     fn unwrap_nums(&self, a: Value, b: Value, line: usize) -> Result<(f64, f64)> {
         match (a, b) {
             (Value::Number(a), Value::Number(b)) => Ok((a, b)),
-            _ => Err((RuntimeError::new_syntax("Both operands must be numbers.", line)).into()),
+            _ => Err((RuntimeError::new_syntax("THOSE AREN'T FUCKIN NUMBERS MATE!", line)).into()),
         }
     }
 }

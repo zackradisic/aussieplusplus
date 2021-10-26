@@ -4,7 +4,12 @@ use std::{
     rc::Rc,
 };
 
+use ahash::RandomState;
+
 use super::Value;
+
+type ValuesMap = HashMap<Rc<String>, Value, RandomState>;
+// type ValuesMap = HashMap<Rc<String>, Value>;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Environment {
@@ -26,10 +31,6 @@ impl Environment {
         }
     }
 
-    pub fn print_values(&self) {
-        // println!("values: {:?}", self.values);
-    }
-
     pub fn get(&self, key: &String) -> Option<Value> {
         self.inner.get(key)
     }
@@ -42,7 +43,7 @@ impl Environment {
         self.inner.define(key, value);
     }
 
-    pub fn clone_values(&self) -> HashMap<Rc<String>, Value> {
+    pub fn clone_values(&self) -> ValuesMap {
         self.inner.values.clone()
     }
 }
@@ -50,14 +51,14 @@ impl Environment {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Inner {
     enclosing: Option<Rc<RefCell<Environment>>>,
-    pub values: HashMap<Rc<String>, Value>,
+    pub values: ValuesMap,
 }
 
 impl Inner {
     fn new() -> Self {
         Self {
             enclosing: None,
-            values: HashMap::new(),
+            values: HashMap::default(),
         }
     }
 
@@ -91,7 +92,7 @@ impl Inner {
     fn with_enclosing(enclosing: Rc<RefCell<Environment>>) -> Self {
         Self {
             enclosing: Some(enclosing),
-            values: HashMap::new(),
+            values: HashMap::default(),
         }
     }
 }

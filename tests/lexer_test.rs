@@ -53,9 +53,9 @@ pub fn test_lex_is() {
 #[test]
 pub fn test_upside_down() {
     test_lexing_upside_down(
-        "⅄ƎʞƆIq ʞOOHƆ
-        ;0Ɩ = ʎ uoʞɔǝɹ ᴉ
-        ;ϛ = x uoʞɔǝɹ ᴉ
+        "¡***Ɔ SɹƎƎHƆ
+        ;0Ɩ = ʎ NOʞƆƎɹ I
+        ;ϛ = x NOʞƆƎɹ I
         ¡Ǝ┴∀W ⅄∀p,פ",
         vec![
             Token::new(Kind::IReckon, 2),
@@ -68,7 +68,8 @@ pub fn test_upside_down() {
             Token::new(Kind::Assign, 3),
             Token::new(Kind::Number(10f64), 3),
             Token::new(Kind::Semicolon, 3),
-            Token::new(Kind::ChookBickey, 4),
+            Token::new(Kind::Cheers, 4),
+            Token::new(Kind::EOF, 5),
         ],
         false,
     );
@@ -91,7 +92,7 @@ pub fn test_lex_keyword_casing() {
     let kinds = vec![
         Kind::Gimme,
         Kind::Isa,
-        Kind::ChookBickey,
+        Kind::Cheers,
         Kind::Walkabout,
         Kind::GdayMate,
         Kind::IReckon,
@@ -120,14 +121,14 @@ pub fn test_lex_keyword_casing() {
                 .collect();
 
             let expected = {
-                if kind.clone() == Kind::ChookBickey {
-                    vec![Token::new(Kind::ChookBickey, 1)]
+                if kind.clone() == Kind::Cheers {
+                    vec![Token::new(Kind::Cheers, 1), Token::new(Kind::EOF, 2)]
                 } else {
                     vec![Token::new(kind.clone(), 1), Token::new(Kind::EOF, 1)]
                 }
             };
 
-            test_lexing(format!("{}", random_case).as_str(), expected, false);
+            test_lexing(random_case.as_str(), expected, false);
         }
     }
 
@@ -164,7 +165,7 @@ pub fn test_lex_keywords() {
         "G'DAY MATE!
         I RECKON x = 5
         I RECKON y = 10
-        CHOOK BICKEY
+        CHEERS C***!
         I RECKON z = 12
         ",
         vec![
@@ -177,7 +178,8 @@ pub fn test_lex_keywords() {
             Token::new(Kind::Ident("y".into()), 3),
             Token::new(Kind::Assign, 3),
             Token::new(Kind::Number(10f64), 3),
-            Token::new(Kind::ChookBickey, 4),
+            Token::new(Kind::Cheers, 4),
+            Token::new(Kind::EOF, 5),
         ],
         false,
     );

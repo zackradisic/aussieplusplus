@@ -3,16 +3,18 @@ name = "aussie_plus_plus"
 version = "0.1.0"
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "aussie_plus_plus"
 
 [dependencies]
+ahash = "0.7.6"
 anyhow = "1.0.44"
-chrono = "0.4.19"
-chrono-tz = "0.6.0"
+arrayvec = "0.7.1"
 itertools = "0.10.1"
 rand = "0.8.4"
 structopt = "0.3.23"
 thiserror = "1.0.29"
 
-[dev-dependencies]
-rand = "0.8.4"
+[target.'cfg(not(target_os = "emscripten"))'.dependencies]
+chrono = "0.4.19"
+chrono-tz = "0.6.0"

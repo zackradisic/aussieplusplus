@@ -1,0 +1,86 @@
+/* ./styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html,
+body,
+body > div:first-child,
+div#__next,
+div#__next > div {
+	height: 100%;
+	background-color: #1E2130;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/FiraCode-Light.woff2') format('woff2'),
+		url("/FiraCode-Light.woff") format("woff");
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/FiraCode-Regular.woff2') format('woff2'),
+		url("/FiraCode-Regular.woff") format("woff");
+	font-weight: 400;
+	font-style: normal;
+}
+
+.docs {
+	@apply text-gray-50;
+}
+
+.docs h1 {
+	@apply text-2xl pt-8 font-bold underline;
+}
+
+.docs h2 {
+	@apply text-lg pt-16 font-bold underline;
+}
+
+.docs p {
+	@apply pt-8 text-gray-300;
+}
+
+.docs pre {
+	@apply mt-8 bg-[#282C42] p-4 rounded-md overflow-auto;
+}
+
+.docs p code {
+	@apply text-gray-50 bg-[#1A1C26];
+}
+
+.docs a {
+	@apply text-blue-400 underline font-bold;
+}
+
+.editor {
+	counter-reset: line;
+	overflow-x: scroll !important;
+	overflow-y: scroll !important;
+}
+  
+#codeArea {
+	overflow-wrap: normal !important;
+	word-break: keep-all !important;
+	outline: none;
+	padding-top: 1rem;
+	padding-left: 60px !important;
+	z-index: 999999999;
+	white-space: nowrap;
+	overflow-x: hidden !important;
+	overflow-y: scroll !important;
+}
+
+.editor pre {
+	padding-left: 60px !important;
+}
+
+.editor .editorLineNumber {
+	position: absolute;
+	left: 0px;
+	color: #8a8a8a;
+	text-align: right;
+	width: 40px;
+}

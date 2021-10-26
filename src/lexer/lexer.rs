@@ -27,7 +27,11 @@ impl<'a, T: Source> Lexer<T> {
                 Ok(tok) => {
                     tokens.push(tok.clone());
                     match tok.kind() {
-                        Kind::ChookBickey | Kind::EOF => break,
+                        Kind::EOF => break,
+                        Kind::Cheers => {
+                            tokens.push(Token::new(Kind::EOF, tok.line() + 1));
+                            break;
+                        }
                         _ => {}
                     }
                 }
@@ -131,7 +135,7 @@ impl<'a, T: Source> Lexer<T> {
                 'f' if self.peek_is('r') => self.eat_keyword_or_ident(c, Kind::From)?,
                 'g' if self.peek_is('i') => self.eat_keyword_or_ident(c, Kind::Gimme)?,
                 'g' if self.peek_is('\'') => self.eat_keyword_or_ident(c, Kind::GdayMate)?,
-                'c' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::ChookBickey)?,
+                'c' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::Cheers)?,
                 'w' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::Walkabout)?,
                 'w' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::Whatabout)?,
                 't' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,

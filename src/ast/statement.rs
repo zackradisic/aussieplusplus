@@ -16,7 +16,7 @@ pub enum Stmt {
     While(Box<WhileLoop>),
     Return(Option<ExprNode>),
     Import(Ident),
-    Exit,
+    Exit(bool),
 }
 
 impl From<Stmt> for Vec<Stmt> {

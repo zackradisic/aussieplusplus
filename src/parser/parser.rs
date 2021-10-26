@@ -4,7 +4,7 @@ use crate::ast::{
     FnDecl, ForLoop, Ident, If, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
     WhileLoop,
 };
-use crate::runtime::Value;
+use crate::runtime::{Value, MAX_ARITY};
 use crate::{
     ast::{BinaryOp, Expr, ExprNode, UnaryOp},
     token::{Kind, Token},
@@ -30,6 +30,7 @@ macro_rules! match_toks {
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
+    consumed_start: bool,
     // To help discriminate boomerangs vs. gt/lt
     inside_block: usize,
 }
@@ -38,20 +39,30 @@ impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
         Self {
             tokens,
+            consumed_start: false,
             current: 0,
             inside_block: 0,
         }
+    }
+
+    pub fn reset(&mut self, tokens: Vec<Token>) {
+        self.current = 0;
+        self.tokens = tokens;
     }
 
     pub fn parse(&mut self) -> Result<Vec<Stmt>> {
         let mut stmts: Vec<Stmt> = Vec::new();
         let mut had_error = false;
 
-        match self.consume_program_start() {
-            Ok(_) => {}
-            Err(e) => {
-                had_error = true;
-                eprintln!("{:?}", e)
+        if !self.consumed_start {
+            match self.consume_program_start() {
+                Ok(_) => {
+                    self.consumed_start = true;
+                }
+                Err(e) => {
+                    had_error = true;
+                    eprintln!("{:?}", e)
+                }
             }
         }
 
@@ -151,7 +162,6 @@ impl Parser {
     fn loops(&mut self, ident: Option<Ident>) -> Result<Stmt> {
         match_toks!(self,
             _other => {
-                println!("_other: {}", _other);
                 todo!()
             },
             Kind::From => {
@@ -222,7 +232,8 @@ impl Parser {
                 self.consume(Kind::Semicolon)?;
                 Ok(Stmt::Break(tok))
             },
-            Kind::FuckinPiker => self.exit_statement(),
+            Kind::FuckinPiker => self.exit_statement(true),
+            Kind::Cheers => self.exit_statement(false),
             Kind::Import => self.import_statement()
         )
     }
@@ -234,9 +245,11 @@ impl Parser {
         Ok(Stmt::Import(ident))
     }
 
-    fn exit_statement(&mut self) -> Result<Stmt> {
-        self.consume(Kind::Semicolon)?;
-        Ok(Stmt::Exit)
+    fn exit_statement(&mut self, fuckinpiker: bool) -> Result<Stmt> {
+        if fuckinpiker {
+            self.consume(Kind::Semicolon)?;
+        }
+        Ok(Stmt::Exit(fuckinpiker))
     }
 
     fn block_statement(&mut self) -> Result<Stmt> {
@@ -527,7 +540,7 @@ impl Parser {
 
         if !self.check(Kind::RightParen) {
             loop {
-                if args.len() > 255 {
+                if args.len() > MAX_ARITY {
                     return Err(ParseError::TooManyArguments(callee.line()).into());
                 }
                 args.push(self.expression()?);

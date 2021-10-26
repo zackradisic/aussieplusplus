@@ -56,15 +56,15 @@ fn test_while_loop() {
     );
 }
 
-#[test]
-fn test_early_exit() {
-    test_code(
-        "i reckon x = 5;
-             ya reckon x == 5 ? FUCKINPIKER;
-             gimme \"this should not appear\";",
-        "",
-    );
-}
+// #[test]
+// fn test_early_exit() {
+//     test_code(
+//         "i reckon x = 5;
+//              ya reckon x == 5 ? FUCKINPIKER;
+//              gimme \"this should not appear\";",
+//         "",
+//     );
+// }
 
 #[test]
 fn test_functions() {

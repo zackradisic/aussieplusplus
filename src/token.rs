@@ -55,7 +55,7 @@ pub enum Kind {
     Is,             // (is)
     Isa,            // (is a)
     BuggerAll,      // Bugger all (nil/null)
-    ChookBickey,    // Chook bickey (end of program)
+    Cheers,         // Cheers C***! (end of program)
     Whatabout,      // Whatabout (else)
     IllHaveA,       //  I'll Have a
     Walkabout,      // Walkabout (for loop)
@@ -109,19 +109,19 @@ impl Kind {
             Kind::Gimme => "gimme",
             Kind::IllHaveA => "i'll have a",
             Kind::BuggerAll => "bugger all",
-            Kind::ChookBickey => "chook bickey", // Chook bickey (end of program)
-            Kind::Whatabout => "whatabout",      // Whatabout (else)
-            Kind::Walkabout => "walkabout",      // Walkabout (for loop)
-            Kind::GdayMate => "g'day mate!",     // G'DAY MATE! (program start)
-            Kind::IReckon => "i reckon",         // I reckon (var decl)
-            Kind::YaReckon => "ya reckon",       // Ya reckon (analogous to if)
+            Kind::Cheers => "cheers c***!", // Chook bickey (end of program)
+            Kind::Whatabout => "whatabout", // Whatabout (else)
+            Kind::Walkabout => "walkabout", // Walkabout (for loop)
+            Kind::GdayMate => "g'day mate!", // G'DAY MATE! (program start)
+            Kind::IReckon => "i reckon",    // I reckon (var decl)
+            Kind::YaReckon => "ya reckon",  // Ya reckon (analogous to if)
             Kind::HardYakkaFor => "the hard yakka for", // Hard yakka for (function decl)
-            Kind::Bail => "bail",                // bail (return)
-            Kind::NahYeah => "nah, yeah",        // true
-            Kind::YeahNah => "yeah, nah",        // false
-            Kind::Ident(ref s) => s.as_str(),    // Identifier
+            Kind::Bail => "bail",           // bail (return)
+            Kind::NahYeah => "nah, yeah",   // true
+            Kind::YeahNah => "yeah, nah",   // false
+            Kind::Ident(ref s) => s.as_str(), // Identifier
             Kind::Number(n) => return format!("{}", n), // Number literal
-            Kind::String(ref s) => s.as_str(),   // String literal
+            Kind::String(ref s) => s.as_str(), // String literal
             Kind::EOF => "EOF",
         }
         .into()
