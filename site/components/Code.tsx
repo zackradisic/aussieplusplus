@@ -32,19 +32,19 @@ const Code = () => {
   const [running, setRunning] = useState<boolean>(false)
   const [isUpsideDown, setIsUpsideDown] = useState<boolean>(false)
 
-  const rightsideUpCached = useRef<string>('')
   const aussieRef = useRef<AussieWorker>()
+  const rightsideUpCached = useRef<string>('')
 
   const flipOrientation = async () => {
     const upsidededness = !isUpsideDown
-    // if (!isUpsideDown) {
-    // rightsideUpCached.current = code
-    const flipped = await aussieRef.current!.flip(code, upsidededness)
+    if (!isUpsideDown) {
+      rightsideUpCached.current = code
+      const flipped = await aussieRef.current!.flip(code, upsidededness)
 
-    setCode(flipped)
-    // } else {
-    //   setCode(rightsideUpCached.current)
-    // }
+      setCode(flipped)
+    } else {
+      setCode(rightsideUpCached.current)
+    }
 
     setIsUpsideDown(upsidededness)
   }
@@ -82,7 +82,7 @@ const Code = () => {
     Prism.highlightAll()
   }, [])
   return (
-    <div className="md:mt-24 bg-bg">
+    <div className="md:mt-24 bg-bg" id="code">
       <div className="flex flex-col justify-center items-center">
         <div className="p-4 lg:p-0 flex-col mx-auto pt-4">
           <div className="whitespace-nowrap overflow-x-hidden flex justify-center items-center language-aussie color-[#ccc]">
@@ -110,7 +110,7 @@ const Code = () => {
             />
           </div>
           <div className="flex flex-col justify-between">
-            <div className="flex flex-row justify-between mt-8 px-4">
+            <div className="flex flex-row items-center justify-between mt-8 px-4">
               <div className="flex flex-row">
                 <button
                   onClick={async () => {

@@ -9,6 +9,7 @@ div#__next,
 div#__next > div {
 	height: 100%;
 	background-color: #1E2130;
+  scroll-behavior: smooth;
 }
 
 @font-face {
