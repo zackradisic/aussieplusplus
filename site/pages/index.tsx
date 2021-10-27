@@ -38,6 +38,22 @@ const Landing = ({ docs }: Props) => {
                 </a>
               </div>
             </div>
+            <div className="mt-4">
+              <h1 className="text-gray-50">
+                Made by{' '}
+                <a
+                  className="text-blue-500 hover:text-blue-600"
+                  href="https://twitter.com/zack_overflow">
+                  @zack_overflow
+                </a>
+                , inspired by{' '}
+                <a
+                  href="https://www.reddit.com/r/ProgrammerHumor/comments/oa8chw/australian_programming_language/"
+                  className="text-blue-400 hover:text-gray-100">
+                  Reddit
+                </a>
+              </h1>
+            </div>
           </div>
         </main>
       </div>
