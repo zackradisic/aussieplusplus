@@ -15,7 +15,7 @@ import CodeDropdown from './CodeDropdown'
 const BREAKPOINTS = { mobile: 0, tablet: 768, desktop: 1280 }
 
 const defaultText =
-  '<h1 class="italic text-gray-300 border-b-2 border-gray-50 border-opacity-10 "><span class="font-bold text-green-500">G&apos;DAY MATE!</span> HIT &apos;Run&apos; TO GET GOING</h1>'
+  '<h1 class="italic text-gray-300 border-b-2 border-gray-50 border-opacity-10 mb-1 pb-1"><span class="font-bold text-green-500">G&apos;DAY MATE!</span> HIT &apos;Run&apos; TO GET GOING</h1>'
 
 const hightlightWithLineNumbers = (input: string) =>
   highlight(input, aussieSyntax, 'aussie')
@@ -30,8 +30,30 @@ const Code = () => {
 
   const [loaded, setLoaded] = useState<boolean>(false)
   const [running, setRunning] = useState<boolean>(false)
+  const [isUpsideDown, setIsUpsideDown] = useState<boolean>(false)
 
+  const rightsideUpCached = useRef<string>('')
   const aussieRef = useRef<AussieWorker>()
+
+  const flipOrientation = async () => {
+    const upsidededness = !isUpsideDown
+    // if (!isUpsideDown) {
+    // rightsideUpCached.current = code
+    const flipped = await aussieRef.current!.flip(code, upsidededness)
+
+    setCode(flipped)
+    // } else {
+    //   setCode(rightsideUpCached.current)
+    // }
+
+    setIsUpsideDown(upsidededness)
+  }
+
+  const switchExample = (code: string) => {
+    rightsideUpCached.current = code
+    setIsUpsideDown(false)
+    setCode(code)
+  }
 
   useEffect(() => {
     const run = async () => {
@@ -78,11 +100,6 @@ const Code = () => {
                     ? '75vh'
                     : '80vh',
                 width: '100vw'
-                // breakpoint === 'mobile'
-                //   ? '90vw'
-                //   : breakpoint === 'tablet'
-                //   ? '75vw'
-                //   : '50vw'
               }}
               textareaClassName="overflow-x-hidden whitespace-nowrap"
               textareaId="codeArea"
@@ -101,7 +118,7 @@ const Code = () => {
                     setTerminalText(defaultText)
                     setRunning(true)
                     try {
-                      await aussieRef.current?.run(code)
+                      await aussieRef.current?.run(code, isUpsideDown)
                     } catch (err) {
                       console.log(err)
                     }
@@ -121,11 +138,17 @@ const Code = () => {
                   Clear
                 </button>
               </div>
-              <CodeDropdown setCode={setCode} />
+              <button
+                onClick={flipOrientation}
+                type="button"
+                className="ml-4 inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                {isUpsideDown ? 'Rightside up mode' : 'uʍop ǝpᴉsdn mode'}
+              </button>
+              <CodeDropdown setCode={switchExample} />
             </div>
-            <div className="px-4 pt-2  mt-8 h-[18.75rem] w-full  overflow-auto rounded-md text-gray-50">
+            <div className="px-4 pt-2 mt-8 w-full rounded-md text-gray-50">
               <div
-                className="bg-[#282C42] h-full px-4 pt-2 rounded-md"
+                className="bg-[#282C42] h-[18.75rem] overflow-auto px-4 pt-2 rounded-md"
                 dangerouslySetInnerHTML={{ __html: terminalText }}></div>
             </div>
           </div>

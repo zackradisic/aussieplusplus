@@ -50,10 +50,57 @@ fn main() {}
 #[cfg(target_os = "emscripten")]
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn interpret(src: *mut c_char) -> usize {
+pub unsafe extern "C" fn interpret(src: *mut c_char, upside_down: bool) -> usize {
     let code = CString::from_raw(src).to_str().unwrap().to_string();
-    let _ = aussie_plus_plus::interpret(&code);
+    if !upside_down {
+        let _ = aussie_plus_plus::interpret(&code);
+    } else {
+        let _ = aussie_plus_plus::interpret_upside_down(&code);
+    }
     0
+}
+
+#[cfg(target_os = "emscripten")]
+/// # Safety
+/// `src` must point to memory previously allocated. The function will consume
+/// the pointer and return a new pointer to the flipped text.
+#[no_mangle]
+pub unsafe extern "C" fn flip_text(
+    src: *mut c_char,
+    len_ptr: *mut usize,
+    upside_down: bool,
+) -> *const c_char {
+    use std::ptr::null;
+
+    let code = CString::from_raw(src).to_str().unwrap().to_string();
+
+    // Allocate new string because flipping orientation may change byte length
+    let output: String = if upside_down {
+        code.chars()
+            .rev()
+            .map(aussie_plus_plus::upside_down::upside_down)
+            .collect()
+    } else {
+        code.chars()
+            .rev()
+            .map(aussie_plus_plus::upside_down::rightside_up)
+            .collect()
+    };
+
+    let output = match CString::new(output) {
+        Ok(cstr) => cstr,
+        Err(e) => {
+            eprintln!("Failed to make cstring: {:?}", e);
+            return null();
+        }
+    };
+
+    *len_ptr = output.to_bytes().len();
+
+    let ptr = output.as_ptr();
+    mem::forget(output);
+
+    ptr
 }
 
 #[cfg(target_os = "emscripten")]

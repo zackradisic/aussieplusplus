@@ -84,3 +84,12 @@ div#__next > div {
 	text-align: right;
 	width: 40px;
 }
+
+.tooltip {
+	@apply invisible absolute;
+	transform: translateY(-100%);
+}
+  
+.has-tooltip:hover .tooltip {
+	@apply visible z-50;
+}

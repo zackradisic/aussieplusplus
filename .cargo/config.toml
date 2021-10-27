@@ -1,0 +1,5 @@
+[target.wasm32-unknown-emscripten]
+rustflags = ["-C", "link-args=gxx_personality_v0_stub.o", "-C", "link-args=--js-library lib.js -O3 -s MODULARIZE=1 -s EXPORT_NAME=aussiepp -s -s EXPORTED_RUNTIME_METHODS=[FS,intArrayFromString,writeArrayToMemory,_malloc,UTF8ToString]"]
+
+[unstable]
+build-std = ["panic_abort", "std"]
