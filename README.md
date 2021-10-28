@@ -17,9 +17,9 @@ Special thanks to [MarkWhyBird](https://github.com/MarkWhybird), [louis100](http
 G'DAY MATE!
 
 THE HARD YAKKA FOR fibonacci IS ( x ) <
-  YA RECKON x <= 1 ? BAIL x;
+    YA RECKON x <= 1 ? BAIL x;
 
-	BAIL fibonacci(x - 1) + fibonacci(x - 2);
+    BAIL fibonacci(x - 1) + fibonacci(x - 2);
 >
 
 GIMME fibonacci(30);
