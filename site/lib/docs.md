@@ -11,8 +11,8 @@ We use boomerangs (`<` `>`) instead of curly braces (`{` `}`)
 // Programs must start with `G'DAY MATE!`
 G'DAY MATE!
 
-// Prints "blimey mate!" to console
-GIMME "blimey mate!";
+// Prints "crikey mate!" to console
+GIMME "crikey mate!";
 
 // Boomerangs for blocks/scopes
 <
@@ -48,7 +48,7 @@ I RECKON emptiness = BUGGER ALL;
 ```aussie
 // If/else statemets
 YA RECKON 1 == 2 ? <
-	GIMME "fark we broke math!";
+	GIMME "fark we broke maths!";
 > WHATABOUT NAH, YEAH == YEAH, NAH ? <
 	GIMME "strewth we broke boolean logic!";
 > WHATABOUT ? <
@@ -102,7 +102,7 @@ THE HARD YAKKA FOR greeting() IS <
 	BAIL "G'day mate!";
 >
 
-GIMME gdayMate();
+GIMME greeting();
 ```
 
 ## Standard library / Built-ins
