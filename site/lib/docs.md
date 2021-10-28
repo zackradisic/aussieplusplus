@@ -28,8 +28,8 @@ CHEERS C***!
 Declare booleans, numbers, strings and `nil/null` like so:
 ```aussie
 // Booleans
-I RECKON thisIsTrue = YEAH, NAH;
-I RECKON thisIsFalse = NAH, YEAH;
+I RECKON thisIsFalse = YEAH, NAH;
+I RECKON thisIsTrue = NAH, YEAH;
 
 // Numbers
 I RECKON regularInteger = 42069;
