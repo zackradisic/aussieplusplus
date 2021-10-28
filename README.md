@@ -5,6 +5,8 @@ Programming language from down under, inspired by [this](https://www.reddit.com/
 
 View live demo [here](http://aussieplusplus.vercel.app/).
 
+Special thanks to [MarkWhyBird](https://github.com/MarkWhybird), [louis100](https://github.com/louis1001), and others who came up with the language [spec](https://github.com/louis1001/c---/issues/5).
+
 ## Key Features
 * 🇦🇺 Syntax entirely comprised of Australian lingo and slang
 * 🪃 Wield an Australian's greatest weapon: use boomerangs (angle-brackets) instead of curly braces
