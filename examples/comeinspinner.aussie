@@ -28,16 +28,16 @@ THE HARD YAKKA FOR comeInSpinner IS (coin1, coin2) <
     >
     
     YA RECKON coin1isTails ? <
-        YA RECKON coin2isTails ? < GIMME "Tails"; >
-        WHATABOUT ? < GIMME "Odds"; >
+        YA RECKON coin2isTails ? < BAIL "Tails"; >
+        WHATABOUT ? < BAIL "Odds"; >
     > WHATABOUT ? <
-        YA RECKON coin2isTails ? < GIMME "Odds"; >
-        WHATABOUT ? < GIMME "Heads"; >
+        YA RECKON coin2isTails ? < BAIL "Odds"; >
+        WHATABOUT ? < BAIL "Heads"; >
     >
 >
 
 THE HARD YAKKA FOR flipACoin IS () <
-    GIMME ChuckSomeDice(0, 2) == 1;
+    BAIL ChuckSomeDice(0, 2) == 1;
 >
 
 GIMME comeInSpinner(flipACoin(), flipACoin());
