@@ -23,7 +23,7 @@ THE HARD YAKKA FOR comeInSpinner IS (coin1, coin2) <
     
     YA RECKON coin2 IS A <
         YEAH, NAH       ~ coin2isTails = YEAH, NAH;
-        NAH, YEAH       ~ coin2isTails = YEAH, NAH;
+        NAH, YEAH       ~ coin2isTails = NAH, YEAH;
         buggeredIfIKnow ~ coin2isTails = (buggeredIfIKnow % 2) == 1;
     >
     
@@ -36,10 +36,10 @@ THE HARD YAKKA FOR comeInSpinner IS (coin1, coin2) <
     >
 >
 
-THE HARD YAKKA FOR flipACoin IS () <
+THE HARD YAKKA FOR tossACoin IS () <
     BAIL ChuckSomeDice(0, 2) == 1;
 >
 
-GIMME comeInSpinner(flipACoin(), flipACoin());
+GIMME comeInSpinner(tossACoin(), tossACoin());
 
 CHEERS C***!
