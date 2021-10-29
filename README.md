@@ -134,20 +134,24 @@ GIMME greeting();
 ```
 
 ## Standard library / Built-ins
-Use `IMPOHT ME FUNC <func>` to import built-in functions. The language currently comes with two built-ins, `ChuckSomeDice(start, end)` and `HitTheSack(ms)`:
+Use `IMPOHT ME FUNC <func>` to import built-in functions. The language currently comes with three built-ins: `ChuckSomeDice(start, end)`, `HitTheSack(ms)`, and `GimmeTime()`:
 
 ```aussie
 IMPOHT ME FUNC ChuckSomeDice;
 IMPOHT ME FUNC HitTheSack;
+IMPOHT ME FUNC GimmeTime;
 
 THE HARD YAKKA FOR goIntoAComa() IS <
 	// Return a random integer from 0-99
 	I RECKON duration = ChuckSomeDice(0, 100);
+	
+	// Return a string of the current Aussie time (currently supported time is Melbourne)
+	I RECKON theTime = GimmeTime();
 
 	// Sleep for `duration` seconds
 	HitTheSack(duration * 1000);
 
-	GIMME "strewth! i went into a coma!";
+	GIMME "strewth! i went into a coma at " + theTime + "!";
 >
 
 goIntoAComa();
