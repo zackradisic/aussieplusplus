@@ -71,7 +71,7 @@ impl Display for BuiltIn {
         match self {
             Self::Sleep(s) => write!(f, "{}(ms)", s.name()),
             Self::Time(t) => write!(f, "{}()", t.name()),
-            Self::Rand(r) => write!(f, "{}(start, ned)", r.name()),
+            Self::Rand(r) => write!(f, "{}(start, end)", r.name()),
         }
     }
 }
