@@ -1,0 +1,45 @@
+G'DAY MATE!
+
+IMPOHT ME FUNC ChuckSomeDice;
+
+// Tails are odd numbers & true values; heads are even numbers & false values. Unexpected values resolve to Heads.
+// Returns values according to this table, where T == tails/true, H == heads/false
+//
+//     coin1  T     H
+//         +-----+-----+
+//       T |Tails|Odds |
+// coin2   +-----+-----+
+//       H |Odds |Heads|
+//         +-----+-----+
+THE HARD YAKKA FOR comeInSpinner IS (coin1, coin2) <
+    I RECKON coin1isTails = YEAH, NAH;
+    I RECKON coin2isTails = YEAH, NAH;
+    
+    YA RECKON coin1 IS A <
+        YEAH, NAH       ~ coin1isTails = YEAH, NAH;
+        NAH, YEAH       ~ coin1isTails = NAH, YEAH;
+        buggeredIfIKnow ~ coin1isTails = (buggeredIfIKnow % 2) == 1;
+    >
+    
+    YA RECKON coin2 IS A <
+        YEAH, NAH       ~ coin2isTails = YEAH, NAH;
+        NAH, YEAH       ~ coin2isTails = YEAH, NAH;
+        buggeredIfIKnow ~ coin2isTails = (buggeredIfIKnow % 2) == 1;
+    >
+    
+    YA RECKON coin1isTails ? <
+        YA RECKON coin2isTails ? < GIMME "Tails"; >
+        WHATABOUT ? < GIMME "Odds"; >
+    > WHATABOUT ? <
+        YA RECKON coin2isTails ? < GIMME "Odds"; >
+        WHATABOUT ? < GIMME "Heads"; >
+    >
+>
+
+THE HARD YAKKA FOR flipACoin IS () <
+    GIMME ChuckSomeDice(0, 2) == 1;
+>
+
+GIMME comeInSpinner(flipACoin(), flipACoin());
+
+CHEERS C***!
