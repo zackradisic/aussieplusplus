@@ -276,7 +276,23 @@ fn test_if() {
     ya reckon x == 42 ? gimme \"strewth!!\"; 
     gimme \"lmao\";",
         "lmao",
-    )
+    );
+
+    test_code(
+        "
+YA RECKON 1 == 2 ? GIMME \"fark we broke maths!\";
+WHATABOUT NAH, YEAH == YEAH, NAH ? GIMME \"strewth we broke boolean logic!\";
+WHATABOUT ? GIMME \"the universe is okay\";",
+        "the universe is okay",
+    );
+
+    test_code(
+        "
+YA RECKON 1 == 2 ? GIMME \"fark we broke maths!\";
+WHATABOUT YEAH, NAH == YEAH, NAH ? GIMME \"lmao\";
+WHATABOUT ? GIMME \"the universe is okay\";",
+        "lmao",
+    );
 }
 
 #[test]

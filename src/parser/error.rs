@@ -24,4 +24,6 @@ pub enum ParseError {
     ExpectPrimary(usize, Kind),
     #[error("YA DAFT BUGGER! YA DIDN'T WRITE \"G'DAY MATE!\" TO START PROGRAM!!")]
     ExpectProgramStart,
+    #[error("[line {0}] OI CUNT! INVALID WHATABOUT, NOT IN AN A RECKON YA BLUDGER!")]
+    InvalidWhatabout(usize),
 }

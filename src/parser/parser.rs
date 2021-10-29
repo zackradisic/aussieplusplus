@@ -31,8 +31,10 @@ pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
     consumed_start: bool,
+
     // To help discriminate boomerangs vs. gt/lt
     inside_block: usize,
+    inside_if: usize,
 }
 
 impl Parser {
@@ -42,6 +44,7 @@ impl Parser {
             consumed_start: false,
             current: 0,
             inside_block: 0,
+            inside_if: 0,
         }
     }
 
@@ -224,7 +227,8 @@ impl Parser {
                 self.inside_block -= 1;
                 ret
             },
-            (Kind::YaReckon | Kind::Whatabout) => self.condition_statement(),
+            Kind::YaReckon => self.condition_statement(false),
+            Kind::Whatabout => self.condition_statement(true),
             Kind::Gimme => self.print_statement(),
             Kind::Bail => self.return_statement(),
             Kind::MateFuckThis => {
@@ -252,6 +256,8 @@ impl Parser {
         Ok(Stmt::Exit(fuckinpiker))
     }
 
+    /// Parse `block_statement`, expects the opening boomerang
+    /// has already been consumed
     fn block_statement(&mut self) -> Result<Stmt> {
         let mut vec: Vec<Stmt> = Vec::new();
 
@@ -262,7 +268,24 @@ impl Parser {
         Ok(Stmt::Block(vec))
     }
 
-    fn condition_statement(&mut self) -> Result<Stmt> {
+    fn condition_statement(&mut self, is_else: bool) -> Result<Stmt> {
+        if self.inside_if == 0 && is_else {
+            return Err(ParseError::InvalidWhatabout(self.previous().line()).into());
+        }
+
+        self.inside_if += 1;
+
+        // No condition, so inside the last else
+        if is_else && self.match_tok(Kind::QuestionMark) {
+            self.inside_if -= 1;
+            return Ok(Stmt::If(If {
+                // Make it an always true if condition so it always executes
+                cond: ExprNode::new(Expr::Literal(Value::Bool(true)), self.previous().line()),
+                then: Box::new(self.statement()?),
+                else_: None,
+            }));
+        }
+
         let cond = self.expression()?;
         let peek = self.peek();
         let kind = peek.kind();
@@ -272,12 +295,13 @@ impl Parser {
             Kind::QuestionMark => {
                 self.consume(Kind::QuestionMark)?;
                 let then = Box::new(self.statement()?);
-                let mut else_: Option<Box<Stmt>> = None;
+                let else_: Option<Box<Stmt>> = if self.peek().kind() == Kind::Whatabout {
+                    Some(Box::new(self.statement()?))
+                } else {
+                    None
+                };
 
-                if self.peek().kind() == Kind::Whatabout {
-                    else_ = Some(Box::new(self.statement()?));
-                }
-
+                self.inside_if -= 1;
                 Ok(Stmt::If(If::new(cond, then, else_)))
             }
             Kind::Isa => {
@@ -639,7 +663,7 @@ impl Parser {
     /// Peek `n` tokens ahead
     fn peek_n(&self, n: usize) -> Token {
         if self.current + n >= self.tokens.len() {
-            self.previous()
+            self.tokens[self.tokens.len() - 1].clone()
         } else {
             self.tokens[self.current + n].clone()
         }
