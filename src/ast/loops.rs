@@ -43,6 +43,13 @@ impl RangeBound<ExprNode> {
         }
     }
 
+    pub fn expr_mut(&mut self) -> &mut ExprNode {
+        match self {
+            Self::Inclusive(expr) => expr,
+            Self::Exclusive(expr) => expr,
+        }
+    }
+
     pub fn to_evaluated(&self, val: f64) -> RangeBound<f64> {
         match self {
             Self::Inclusive(_) => RangeBound::Inclusive(val),

@@ -269,7 +269,10 @@ impl<'a, T: Source> Lexer<T> {
     }
 
     fn expect_separator(&mut self) -> Result<()> {
-        let separated = matches!(self.peek(), Some(' ' | '\n' | ';' | ',' | '(' | ')') | None);
+        let separated = matches!(
+            self.peek(),
+            Some(' ' | '\n' | ';' | ',' | '(' | ')' | '[' | ']') | None
+        );
 
         if separated {
             return Ok(());

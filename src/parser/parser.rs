@@ -186,6 +186,7 @@ impl Parser {
                 self.consume(Kind::To)?;
                 let end = {
                     let expr = self.expression()?;
+                    println!("EXpr is: {:?}", expr);
                     match_toks!(self,
                         k =>
                         return Err(ParseError::ExpectedTokens(
@@ -204,7 +205,7 @@ impl Parser {
 
                 let body = self.statement()?;
 
-                Ok(Stmt::For(Box::new(ForLoop::new(ident.into(), (start, end), vec![body]))))
+                Ok(Stmt::For(Box::new(ForLoop::new((ident, usize::MAX).into(), (start, end), vec![body]))))
             },
             Kind::Until => {
                 self.consume(Kind::LeftParen)?;
@@ -376,10 +377,11 @@ impl Parser {
     }
 
     fn return_statement(&mut self) -> Result<Stmt> {
+        let tok = self.previous();
         if self.match_tok(Kind::Semicolon) {
-            Ok(Stmt::Return(None))
+            Ok(Stmt::Return(tok, None))
         } else {
-            let stmt = Stmt::Return(Some(self.expression()?));
+            let stmt = Stmt::Return(tok, Some(self.expression()?));
             self.consume(Kind::Semicolon)?;
             Ok(stmt)
         }
@@ -594,7 +596,7 @@ impl Parser {
             Kind::NahYeah => Expr::Literal(true.into()),
             Kind::YeahNah => Expr::Literal(false.into()),
             Kind::BuggerAll => Expr::Literal(Value::Nil),
-            Kind::Ident(name) => Expr::Var(Var::new(Ident::new(name, line))),
+            Kind::Ident(name) => Expr::Var(Var::new(Ident::new(name, line), usize::MAX)),
             Kind::LeftParen => {
                 let expr = self.expression()?;
                 self.consume(Kind::RightParen)?;

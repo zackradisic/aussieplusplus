@@ -1,5 +1,6 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
+use itertools::Itertools;
 use std::{
     cell::RefCell,
     fmt::Arguments,
@@ -13,7 +14,7 @@ use std::{
 use crate::{
     ast::{
         BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp,
-        WhileLoop,
+        Var, WhileLoop,
     },
     parser::error::ParseError,
     runtime::AussieCallable,
@@ -106,18 +107,12 @@ impl<'a> Interpreter<'a> {
                     Ok(Some(ExitKind::Return(Value::Nil)))
                 }
             }
-            Stmt::Return(expr) => match expr {
+            Stmt::Return(_, expr) => match expr {
                 None => Ok(Some(ExitKind::Return(Value::Nil))),
                 Some(val) => Ok(Some(ExitKind::Return(self.evaluate(val)?))),
             },
             Stmt::FnDecl(fn_decl) => {
-                let function: Callable = UserDefined::new(
-                    fn_decl.clone(),
-                    Rc::new(RefCell::new(Environment::new_with_enclosing(
-                        self.env.clone(),
-                    ))),
-                )
-                .into();
+                let function: Callable = UserDefined::new(fn_decl.clone(), self.env.clone()).into();
 
                 self.env
                     .borrow_mut()
@@ -195,6 +190,7 @@ impl<'a> Interpreter<'a> {
                 } else {
                     None
                 };
+
                 env.define(var.unwrap().name(), val);
 
                 self.execute_block(&branch.body, Rc::new(RefCell::new(env)))
@@ -310,7 +306,7 @@ impl<'a> Interpreter<'a> {
                 self.env.borrow_mut().assign(var.name(), value.clone());
                 Ok(value)
             }
-            Expr::Var(ref var) => self.env.borrow().get(&var.ident().name()).map_or_else(
+            Expr::Var(ref var) => self.lookup(var).map_or_else(
                 || {
                     Err(
                         RuntimeError::UndefinedVariable(var.line(), (*var.name()).to_string())
@@ -452,6 +448,16 @@ impl<'a> Interpreter<'a> {
 }
 
 impl<'a> Interpreter<'a> {
+    fn lookup(&self, var: &Var) -> Option<Value> {
+        match Environment::ancestor(&self.env, var.scope_distance) {
+            None => None,
+            Some(ancestor) => {
+                let val = ancestor.borrow().get(&var.ident().to_string());
+                val
+            }
+        }
+    }
+
     fn is_truthy(val: &Value) -> bool {
         match val {
             Value::Bool(b) => *b,

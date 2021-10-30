@@ -1,6 +1,7 @@
 use aussie_plus_plus::{
     lexer::{source, Lexer},
     parser::parser::Parser,
+    resolver::Resolver,
     runtime::Interpreter,
 };
 
@@ -14,8 +15,13 @@ fn test_code(src: &str, expected: &str) {
     s.push_str(src);
     let mut lex = Lexer::new(source::Regular::new(s.chars()));
     let (tokens, _) = lex.lex();
+    println!("Tokens: {:#?}", tokens);
     let mut parser = Parser::new(tokens);
-    let stmts = parser.parse().unwrap();
+    let mut stmts = parser.parse().unwrap();
+
+    if Resolver::new().resolve(&mut stmts) {
+        panic!("Resolver failed")
+    }
 
     let mut buf: Vec<u8> = Vec::with_capacity(128);
     let mut iptr = Interpreter::new_with_writer(&mut buf);
@@ -32,6 +38,40 @@ fn test_code(src: &str, expected: &str) {
         }
     }
 }
+
+#[test]
+fn test_imports() {
+    test_code(
+        "
+        IMPOHT ME FUNC ChuckSomeDice;
+        IMPOHT ME FUNC HitTheSack;
+
+        HitTheSack(100);
+        ChuckSomeDice(0, 1);
+",
+        "",
+    );
+}
+
+#[test]
+fn test_scopes() {
+    test_code(
+        "
+        i reckon x = 5;
+        <
+            THE HARD YAKKA FOR testFunc IS () <
+               GIMME x;
+            >
+
+            testFunc();
+            i reckon x = 420;
+            testFunc();
+        >
+",
+        "5\n5",
+    );
+}
+
 #[test]
 fn test_while_loop() {
     test_code(
@@ -158,6 +198,18 @@ fn test_for_loop_ranges() {
     ",
         "0\n1",
     );
+
+    // Variables as ranges
+    test_code(
+        "
+        I reckon z = -1;
+        I reckon y = 1;
+        I reckon x is a walkabout from (z to y] <
+            gimme x;
+        >
+    ",
+        "0\n1",
+    );
 }
 
 #[test]
@@ -202,7 +254,7 @@ fn test_match() {
         "i reckon x = 2;
         ya reckon x == 2 is a <
                     Nah, yeah ~ gimme \"FARK\";
-                    Yeah, nah ~ gimme f;
+                    Yeah, nah ~ gimme 420;
                 >",
         "FARK",
     );

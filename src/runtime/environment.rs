@@ -16,6 +16,22 @@ pub struct Environment {
     pub inner: Inner,
 }
 
+impl Environment {
+    pub fn ancestor(
+        root: &Rc<RefCell<Environment>>,
+        hops: usize,
+    ) -> Option<Rc<RefCell<Environment>>> {
+        if hops == 0 {
+            Some(root.clone())
+        } else {
+            match &root.borrow().inner.enclosing {
+                None => None,
+                Some(enclosing) => Environment::ancestor(enclosing, hops - 1),
+            }
+        }
+    }
+}
+
 impl Default for Environment {
     fn default() -> Self {
         Self {

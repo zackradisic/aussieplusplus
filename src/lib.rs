@@ -1,10 +1,12 @@
 use anyhow::Result;
 use parser::parser::Parser;
+use resolver::Resolver;
 use runtime::Interpreter;
 
 pub mod ast;
 pub mod lexer;
 pub mod parser;
+pub mod resolver;
 pub mod runtime;
 pub mod token;
 pub mod upside_down;
@@ -14,7 +16,11 @@ pub fn interpret(src: &str) -> Result<()> {
     let (tokens, _) = lex.lex();
 
     let mut parser = parser::parser::Parser::new(tokens);
-    let stmts = parser.parse()?;
+    let mut stmts = parser.parse()?;
+
+    if Resolver::new().resolve(&mut stmts) {
+        return Ok(());
+    }
 
     let mut iptr = Interpreter::new();
     iptr.interpret(stmts)?;
@@ -27,7 +33,11 @@ pub fn interpret_repl(src: &str, interpreter: &mut Interpreter, parser: &mut Par
     let (tokens, _) = lex.lex();
 
     parser.reset(tokens);
-    let stmts = parser.parse()?;
+    let mut stmts = parser.parse()?;
+
+    if Resolver::new().resolve(&mut stmts) {
+        return Ok(());
+    }
 
     interpreter.interpret(stmts)
 }
@@ -38,7 +48,11 @@ pub fn interpret_upside_down(src: &str) -> Result<()> {
     let (tokens, _) = lex.lex();
 
     let mut parser = parser::parser::Parser::new(tokens);
-    let stmts = parser.parse()?;
+    let mut stmts = parser.parse()?;
+
+    if Resolver::new().resolve(&mut stmts) {
+        return Ok(());
+    }
 
     let mut iptr = Interpreter::new();
     iptr.interpret(stmts)?;

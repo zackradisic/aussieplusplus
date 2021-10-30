@@ -1,6 +1,7 @@
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use anyhow::Result;
+use itertools::Itertools;
 
 use crate::{
     ast::FnDecl,
@@ -50,6 +51,7 @@ impl Display for Function {
 #[derive(Clone, PartialEq, Debug)]
 pub struct UserDefined {
     decl: FnDecl,
+    // The closure this function was defined in
     env: Rc<RefCell<Environment>>,
 }
 
@@ -67,9 +69,12 @@ impl AussieCallable for UserDefined {
             env.define(parameter.name(), value.clone());
         }
 
-        if let Some(ExitKind::Return(val)) =
-            interpreter.execute_block(&self.decl.body, Rc::new(RefCell::new(env)))?
-        {
+        if let Some(ExitKind::Return(val)) = interpreter.execute_block(
+            &self.decl.body,
+            Rc::new(RefCell::new(Environment::new_with_enclosing(Rc::new(
+                RefCell::new(env),
+            )))),
+        )? {
             return Ok(val);
         }
 

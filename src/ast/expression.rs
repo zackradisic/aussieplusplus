@@ -24,6 +24,10 @@ impl ExprNode {
         &self.expr
     }
 
+    pub fn expr_mut(&mut self) -> &mut Expr {
+        &mut self.expr
+    }
+
     pub fn literal(&self) -> Option<&Value> {
         self.expr.literal()
     }

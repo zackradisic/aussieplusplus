@@ -29,7 +29,7 @@ fn test_parse_for_loop() {
             gimme x;
             >",
         |stmts| {
-            let inner = Stmt::Print(ExprNode::new(Expr::Var(("x", 2).into()), 2));
+            let inner = Stmt::Print(ExprNode::new(Expr::Var(("x", 2, usize::MAX).into()), 2));
             let body = vec![Stmt::Block(vec![inner])];
             let range = (
                 RangeBound::Exclusive(ExprNode::new(Expr::Literal(0.into()), 1)),
@@ -38,7 +38,7 @@ fn test_parse_for_loop() {
             assert_eq!(
                 stmts[0],
                 Stmt::For(Box::new(ForLoop::new(
-                    Var::new(("x", 1).into()),
+                    Var::new(("x", 1).into(), usize::MAX),
                     range,
                     body
                 )))
@@ -60,7 +60,7 @@ fn test_parse_for_loop() {
             assert_eq!(
                 stmts[0],
                 Stmt::For(Box::new(ForLoop::new(
-                    Var::new(("x", 1).into()),
+                    Var::new(("x", 1).into(), usize::MAX),
                     range,
                     body
                 )))
@@ -80,7 +80,7 @@ fn test_parse_assign() {
                 stmts[1],
                 Stmt::Expr(ExprNode::new(
                     Expr::Assign(
-                        Var::new(("x", 2).into()),
+                        Var::new(("x", 2).into(), usize::MAX),
                         Box::new(ExprNode::new(Expr::Literal(10.into()), 2))
                     ),
                     2
@@ -101,7 +101,7 @@ fn test_parse_assign() {
                     ("y", 3).into(),
                     Some(ExprNode::new(
                         Expr::Assign(
-                            Var::new(("x", 3).into()),
+                            Var::new(("x", 3).into(), usize::MAX),
                             Box::new(ExprNode::new(Expr::Literal(10.into()), 3)),
                         ),
                         3,
@@ -122,7 +122,7 @@ fn test_parse_match() {
         |stmts| {
             let cond = ExprNode::new(
                 Expr::Binary(
-                    Box::new(ExprNode::new(Expr::Var(("x", 1).into()), 1)),
+                    Box::new(ExprNode::new(Expr::Var(("x", 1, usize::MAX).into()), 1)),
                     BinaryOp::Equal,
                     Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
                 ),
@@ -161,7 +161,7 @@ fn test_parse_block() {
         |stmts| {
             let cond = ExprNode::new(
                 Expr::Binary(
-                    Box::new(ExprNode::new(Expr::Var(("x", 1).into()), 1)),
+                    Box::new(ExprNode::new(Expr::Var(("x", 1, usize::MAX).into()), 1)),
                     BinaryOp::Equal,
                     Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
                 ),
@@ -190,7 +190,7 @@ fn test_parse_block() {
         |stmts| {
             let cond = ExprNode::new(
                 Expr::Binary(
-                    Box::new(ExprNode::new(Expr::Var(("x", 1).into()), 1)),
+                    Box::new(ExprNode::new(Expr::Var(("x", 1, usize::MAX).into()), 1)),
                     BinaryOp::Equal,
                     Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
                 ),

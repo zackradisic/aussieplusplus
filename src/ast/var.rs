@@ -2,12 +2,17 @@ use std::{fmt::Display, rc::Rc};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Var {
-    ident: Ident,
+    pub ident: Ident,
+    // is defined. 0 means it belongs in the current environment
+    pub scope_distance: usize,
 }
 
 impl Var {
-    pub fn new(ident: Ident) -> Self {
-        Self { ident }
+    pub fn new(ident: Ident, scope_distance: usize) -> Self {
+        Self {
+            ident,
+            scope_distance,
+        }
     }
 
     pub fn ident(&self) -> Ident {
@@ -23,27 +28,33 @@ impl Var {
     }
 }
 
-impl From<Ident> for Var {
-    fn from(ident: Ident) -> Self {
-        Self { ident }
+impl From<(Ident, usize)> for Var {
+    fn from(val: (Ident, usize)) -> Self {
+        Self {
+            ident: val.0,
+            scope_distance: val.1,
+        }
     }
 }
 
-impl From<(String, usize)> for Var {
-    fn from(tup: (String, usize)) -> Self {
-        Self { ident: tup.into() }
+impl From<(String, usize, usize)> for Var {
+    fn from(tup: (String, usize, usize)) -> Self {
+        Self {
+            ident: (tup.0, tup.1).into(),
+            scope_distance: tup.2,
+        }
     }
 }
 
-impl From<(&str, usize)> for Var {
-    fn from(tup: (&str, usize)) -> Self {
-        (tup.0.to_string(), tup.1).into()
+impl From<(&str, usize, usize)> for Var {
+    fn from(tup: (&str, usize, usize)) -> Self {
+        (tup.0.to_string(), tup.1, tup.2).into()
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ident {
-    name: Rc<String>,
+    pub name: Rc<String>,
     line: usize,
 }
 
