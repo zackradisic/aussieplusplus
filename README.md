@@ -95,17 +95,17 @@ YA RECKON randomBeer() IS A <
 `aussie++` has for and while loops. With for loops the main thing to note is that the ranges are specified using interval notation (`[` or `]` is inclusive, and `(` or `)` is exclusive). You can mix and match. You can break out of a loop by saying `MATE FUCK THIS`:
 ```aussie
 // From 0-100
-I RECKON x IS A WALKABOUT FROM [0, 100] <
+I RECKON x IS A WALKABOUT FROM [0 TO 100] <
 	GIMME x;
 >
 
 // From 0-99
-I RECKON x IS A WALKABOUT FROM [0, 100) <
+I RECKON x IS A WALKABOUT FROM [0 TO 100) <
 	GIMME x;
 >
 
 // Breaking with `MATE FUCK THIS`
-I RECKON x IS A WALKABOUT FROM [0, 999999] <
+I RECKON x IS A WALKABOUT FROM [0 TO 999999] <
 	YA RECKON x > 1000 ? MATE FUCK THIS;
 >
 ```
@@ -134,24 +134,20 @@ GIMME greeting();
 ```
 
 ## Standard library / Built-ins
-Use `IMPOHT ME FUNC <func>` to import built-in functions. The language currently comes with three built-ins: `ChuckSomeDice(start, end)`, `HitTheSack(ms)`, and `GimmeTime()`:
+Use `IMPOHT ME FUNC <func>` to import built-in functions. The language currently comes with two built-ins, `ChuckSomeDice(start, end)` and `HitTheSack(ms)`:
 
 ```aussie
 IMPOHT ME FUNC ChuckSomeDice;
 IMPOHT ME FUNC HitTheSack;
-IMPOHT ME FUNC GimmeTime;
 
 THE HARD YAKKA FOR goIntoAComa() IS <
 	// Return a random integer from 0-99
 	I RECKON duration = ChuckSomeDice(0, 100);
-	
-	// Return a string of the current Aussie time (currently supported time is Melbourne)
-	I RECKON theTime = GimmeTime();
 
 	// Sleep for `duration` seconds
 	HitTheSack(duration * 1000);
 
-	GIMME "strewth! i went into a coma at " + theTime + "!";
+	GIMME "strewth! i went into a coma!";
 >
 
 goIntoAComa();

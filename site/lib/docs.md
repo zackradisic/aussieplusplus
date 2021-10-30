@@ -67,17 +67,17 @@ YA RECKON randomBeer() IS A <
 `aussie++` has for and while loops. With for loops the main thing to note is that the ranges are specified using interval notation (`[` or `]` is inclusive, and `(` or `)` is exclusive). You can mix and match. You can break out of a loop by saying `MATE FUCK THIS`:
 ```aussie
 // From 0-100
-I RECKON x IS A WALKABOUT FROM [0, 100] <
+I RECKON x IS A WALKABOUT FROM [0 TO 100] <
 	GIMME x;
 >
 
 // From 0-99
-I RECKON x IS A WALKABOUT FROM [0, 100) <
+I RECKON x IS A WALKABOUT FROM [0 TO 100) <
 	GIMME x;
 >
 
 // Breaking with `MATE FUCK THIS`
-I RECKON x IS A WALKABOUT FROM [0, 999999] <
+I RECKON x IS A WALKABOUT FROM [0 TO 999999] <
 	YA RECKON x > 1000 ? MATE FUCK THIS;
 >
 ```
