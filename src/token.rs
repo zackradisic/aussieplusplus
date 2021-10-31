@@ -64,8 +64,14 @@ pub enum Kind {
     YaReckon,       // Ya reckon (analogous to if)
     HardYakkaFor,   // Hard yakka for (function decl)
     Bail,           // bail (return)
-    NahYeah,        // true
-    YeahNah,        // false
+    True,           // true
+    False,          // false
+
+    // A sequence of Yeah/Nahs followed by a ! will be transformed
+    // into one NahYeah or YeahNah. The parser will never see these tokens.
+    Yeah,
+    Nah,
+
     Ident(String),  // Identifier
     Number(f64),    // Number literal
     String(String), // String literal
@@ -117,8 +123,10 @@ impl Kind {
             Kind::YaReckon => "ya reckon",  // Ya reckon (analogous to if)
             Kind::HardYakkaFor => "the hard yakka for", // Hard yakka for (function decl)
             Kind::Bail => "bail",           // bail (return)
-            Kind::NahYeah => "nah, yeah",   // true
-            Kind::YeahNah => "yeah, nah",   // false
+            Kind::True => "nah, yeah!",     // true
+            Kind::False => "yeah, nah!",    // false
+            Kind::Nah => "nah",             // true
+            Kind::Yeah => "yeah",           // false
             Kind::Ident(ref s) => s.as_str(), // Identifier
             Kind::Number(n) => return format!("{}", n), // Number literal
             Kind::String(ref s) => s.as_str(), // String literal

@@ -116,8 +116,8 @@ fn test_parse_assign() {
 fn test_parse_match() {
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all;
-                    Yeah, nah ~ 1;
+                    Nah, yeah! ~ Bugger all;
+                    Yeah, nah! ~ 1;
                 >",
         |stmts| {
             let cond = ExprNode::new(
@@ -131,7 +131,7 @@ fn test_parse_match() {
             let branches = vec![
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::NahYeah.into();
+                        let pat: Option<Pattern> = Kind::True.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2))],
@@ -139,7 +139,7 @@ fn test_parse_match() {
                 ),
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::YeahNah.into();
+                        let pat: Option<Pattern> = Kind::False.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(1.into()), 3))],
@@ -184,8 +184,8 @@ fn test_parse_block() {
 
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all;
-                    Yeah, nah ~ 1;
+                    Nah, yeah! ~ Bugger all;
+                    Yeah, nah! ~ 1;
                 >",
         |stmts| {
             let cond = ExprNode::new(
@@ -199,7 +199,7 @@ fn test_parse_block() {
             let branches = vec![
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::NahYeah.into();
+                        let pat: Option<Pattern> = Kind::True.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2))],
@@ -207,7 +207,7 @@ fn test_parse_block() {
                 ),
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::YeahNah.into();
+                        let pat: Option<Pattern> = Kind::False.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(1.into()), 3))],
@@ -256,7 +256,7 @@ fn test_parse_var() {
 
 #[test]
 fn test_parse_if() {
-    test_parse("ya reckon 5 == 2 ? nah, yeah;", |stmts| {
+    test_parse("ya reckon 5 == 2 ? nah, yeah!;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::If(If {

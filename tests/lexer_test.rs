@@ -38,6 +38,37 @@ fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
 }
 
 #[test]
+pub fn test_lex_bool() {
+    test_lexing(
+        "NAH YEAH NAH YEAH!",
+        vec![Token::new(Kind::True, 1), Token::new(Kind::EOF, 1)],
+        false,
+    );
+
+    test_lexing(
+        "NAH 
+        YEAH NAH NAH!",
+        vec![Token::new(Kind::False, 2), Token::new(Kind::EOF, 2)],
+        false,
+    );
+
+    test_lexing(
+        "NAH, 
+        YEAH, NAH, NAH YEAH!",
+        vec![Token::new(Kind::True, 2), Token::new(Kind::EOF, 2)],
+        false,
+    );
+
+    test_lexing(
+        "NAH YEAH NAH
+        NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH
+        YEAH YEAH YEAH YEAH YEAH YEAH NAH!",
+        vec![Token::new(Kind::False, 3), Token::new(Kind::EOF, 3)],
+        false,
+    );
+}
+
+#[test]
 pub fn test_lex_is() {
     test_lexing(
         "is is a",
@@ -99,8 +130,8 @@ pub fn test_lex_keyword_casing() {
         Kind::YaReckon,
         Kind::HardYakkaFor,
         Kind::Bail,
-        Kind::YeahNah,
-        Kind::NahYeah,
+        Kind::False,
+        Kind::True,
         Kind::BuggerAll,
     ];
 
@@ -189,9 +220,9 @@ pub fn test_lex_keywords() {
 fn test_lex_ya_reckon() {
     test_lexing(
         "Ya reckon x == 5 <
-            bail Nah, yeah
+            bail Nah, yeah!
         >
-        bail Yeah, Nah",
+        bail Yeah, Nah!",
         vec![
             Token::new(Kind::YaReckon, 1),
             Token::new(Kind::Ident("x".into()), 1),
@@ -199,10 +230,10 @@ fn test_lex_ya_reckon() {
             Token::new(Kind::Number(5f64), 1),
             Token::new(Kind::LeftBoomerang, 1),
             Token::new(Kind::Bail, 2),
-            Token::new(Kind::NahYeah, 2),
+            Token::new(Kind::True, 2),
             Token::new(Kind::RightBoomerang, 3),
             Token::new(Kind::Bail, 4),
-            Token::new(Kind::YeahNah, 4),
+            Token::new(Kind::False, 4),
             Token::new(Kind::EOF, 4),
         ],
         false,
@@ -392,10 +423,10 @@ pub fn test_operators() {
     );
 
     test_lexing(
-        "!Yeah, Nah",
+        "!Yeah, Nah!",
         vec![
             Token::new(Kind::Bang, 1),
-            Token::new(Kind::YeahNah, 1),
+            Token::new(Kind::False, 1),
             Token::new(Kind::EOF, 1),
         ],
         false,

@@ -25,12 +25,18 @@ CHEERS C***!
 
 
 ## Types / Variables
-Declare booleans, numbers, strings and `nil/null` like so:
+Booleans are any sequence of `NAH`s and `YEAH`s separated by whitespace, a comma, or `\n` and followed by a terminal `!` denoting the end of the boolean. The last `NAH` or `YEAH` determines the truthiness of the boolean. The following are all valid booleans: 
 ```aussie
 // Booleans
-I RECKON thisIsFalse = YEAH, NAH;
-I RECKON thisIsTrue = NAH, YEAH;
+I RECKON thisIsFalse = YEAH, NAH!;
+I RECKON thisIsTrue = NAH, YEAH!;
+I RECKON alsoTrue = NAH YEAH YEAH YEAH YEAH YEAH NAH!
+I RECKON wow = NAH YEAH NAH 
+NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH!
+```
 
+Numbers, strings and `nil/null` are like other languages:
+```aussie
 // Numbers
 I RECKON regularInteger = 42069;
 I RECKON tinyNum = 0.00001;
@@ -49,7 +55,7 @@ I RECKON emptiness = BUGGER ALL;
 // If/else statemets
 YA RECKON 1 == 2 ? <
 	GIMME "fark we broke maths!";
-> WHATABOUT NAH, YEAH == YEAH, NAH ? <
+> WHATABOUT NAH, YEAH! == YEAH, NAH! ? <
 	GIMME "strewth we broke boolean logic!";
 > WHATABOUT ? <
 	GIMME "the universe is okay";

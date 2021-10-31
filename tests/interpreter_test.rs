@@ -45,9 +45,11 @@ fn test_imports() {
         "
         IMPOHT ME FUNC ChuckSomeDice;
         IMPOHT ME FUNC HitTheSack;
+        IMPOHT ME FUNC GimmeTime;
 
         HitTheSack(100);
         ChuckSomeDice(0, 1);
+        GimmeTime();
 ",
         "",
     );
@@ -86,7 +88,7 @@ fn test_while_loop() {
 
     test_code(
         "
-        i reckon i'll have a walkabout until (Yeah, nah) <
+        i reckon i'll have a walkabout until (Yeah, nah!) <
             gimme \"bloody oath!\";
             mate fuck this;
         >
@@ -253,8 +255,8 @@ fn test_match() {
     test_code(
         "i reckon x = 2;
         ya reckon x == 2 is a <
-                    Nah, yeah ~ gimme \"FARK\";
-                    Yeah, nah ~ gimme 420;
+                    Nah, yeah! ~ gimme \"FARK\";
+                    Yeah, nah! ~ gimme 420;
                 >",
         "FARK",
     );
@@ -333,7 +335,7 @@ fn test_if() {
     test_code(
         "
 YA RECKON 1 == 2 ? GIMME \"fark we broke maths!\";
-WHATABOUT NAH, YEAH == YEAH, NAH ? GIMME \"strewth we broke boolean logic!\";
+WHATABOUT NAH, YEAH! == YEAH, NAH! ? GIMME \"strewth we broke boolean logic!\";
 WHATABOUT ? GIMME \"the universe is okay\";",
         "the universe is okay",
     );
@@ -341,7 +343,7 @@ WHATABOUT ? GIMME \"the universe is okay\";",
     test_code(
         "
 YA RECKON 1 == 2 ? GIMME \"fark we broke maths!\";
-WHATABOUT YEAH, NAH == YEAH, NAH ? GIMME \"lmao\";
+WHATABOUT YEAH, NAH! == YEAH, NAH! ? GIMME \"lmao\";
 WHATABOUT ? GIMME \"the universe is okay\";",
         "lmao",
     );
@@ -353,19 +355,19 @@ fn test_ops() {
     test_code("gimme 5 - 2;", "3");
     test_code("gimme 5 * 2;", "10");
     test_code("gimme 5 / 2;", "2.5");
-    test_code("gimme 5 > 2;", "Nah, yeah");
-    test_code("gimme 5 >= 2;", "Nah, yeah");
-    test_code("gimme 5 < 2;", "Yeah, nah");
-    test_code("gimme 5 <= 2;", "Yeah, nah");
-    test_code("gimme 5 == 2;", "Yeah, nah");
-    test_code("gimme 5 != 2;", "Nah, yeah");
+    test_code("gimme 5 > 2;", "Nah, yeah!");
+    test_code("gimme 5 >= 2;", "Nah, yeah!");
+    test_code("gimme 5 < 2;", "Yeah, nah!");
+    test_code("gimme 5 <= 2;", "Yeah, nah!");
+    test_code("gimme 5 == 2;", "Yeah, nah!");
+    test_code("gimme 5 != 2;", "Nah, yeah!");
     test_code("gimme 4 % 2;", "0");
     test_code("gimme 5 % 2;", "1");
 
-    test_code("gimme nah, yeah && yeah, nah;", "Yeah, nah");
-    test_code("gimme nah, yeah && nah, yeah;", "Nah, yeah");
-    test_code("gimme nah, yeah || yeah, nah;", "Nah, yeah");
-    test_code("gimme yeah, nah || yeah, nah;", "Yeah, nah");
+    test_code("gimme nah, yeah! && yeah, nah!;", "Yeah, nah!");
+    test_code("gimme nah, yeah! && nah, yeah!;", "Nah, yeah!");
+    test_code("gimme nah, yeah! || yeah, nah!;", "Nah, yeah!");
+    test_code("gimme yeah, nah! || yeah, nah!;", "Yeah, nah!");
 
     test_code("gimme ((5 + 5) / 2) * 2;", "10");
 

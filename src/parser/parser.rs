@@ -347,8 +347,8 @@ impl Parser {
                     vec![
                         Kind::Number(420.into()),
                         Kind::String("any string literal".into()),
-                        Kind::NahYeah,
-                        Kind::YeahNah,
+                        Kind::True,
+                        Kind::False,
                         Kind::BuggerAll,
                         Kind::Ident("any identifier".into()),
                     ],
@@ -593,8 +593,8 @@ impl Parser {
         let expr = match next.kind() {
             Kind::Number(num) => Expr::Literal(num.into()),
             Kind::String(s) => Expr::Literal(s.into()),
-            Kind::NahYeah => Expr::Literal(true.into()),
-            Kind::YeahNah => Expr::Literal(false.into()),
+            Kind::True => Expr::Literal(true.into()),
+            Kind::False => Expr::Literal(false.into()),
             Kind::BuggerAll => Expr::Literal(Value::Nil),
             Kind::Ident(name) => Expr::Var(Var::new(Ident::new(name, line), usize::MAX)),
             Kind::LeftParen => {

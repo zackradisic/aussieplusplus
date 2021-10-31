@@ -22,18 +22,60 @@ impl<'a, T: Source> Lexer<T> {
         let mut tokens: Vec<Token> = Vec::new();
         let mut had_error = false;
 
+        let mut last_nah_yeah: Option<Kind> = None;
+        let mut nah_yeah_count = 0;
+
         loop {
             match self.next_token() {
                 Ok(tok) => {
-                    tokens.push(tok.clone());
                     match tok.kind() {
-                        Kind::EOF => break,
+                        Kind::EOF => {
+                            tokens.push(tok);
+                            break;
+                        }
                         Kind::Cheers => {
+                            tokens.push(Token::new(Kind::Cheers, tok.line()));
                             tokens.push(Token::new(Kind::EOF, tok.line() + 1));
                             break;
                         }
+                        Kind::Nah | Kind::Yeah => {
+                            last_nah_yeah = Some(tok.kind());
+                            nah_yeah_count += 1;
+                            // Don't fall through
+                            continue;
+                        }
+                        Kind::Bang => {
+                            if let Some(k) = last_nah_yeah {
+                                let tok = match k {
+                                    Kind::Yeah => Token::new(Kind::True, tok.line()),
+                                    Kind::Nah => Token::new(Kind::False, tok.line()),
+                                    _ => panic!("This should not happen"),
+                                };
+
+                                if nah_yeah_count < 2 {
+                                    had_error = true;
+                                    eprintln!("{}", LexError::TooLittleNahYeahs(tok.line()));
+                                }
+
+                                last_nah_yeah = None;
+                                nah_yeah_count = 0;
+                                tokens.push(tok);
+
+                                continue;
+                            }
+                        }
                         _ => {}
                     }
+
+                    if last_nah_yeah.is_some() {
+                        had_error = true;
+                        eprintln!(
+                            "{}",
+                            LexError::Expected("!".into(), tok.kind().literal(), tok.line())
+                        );
+                    }
+
+                    tokens.push(tok);
                 }
                 Err(e) => {
                     had_error = true;
@@ -139,7 +181,8 @@ impl<'a, T: Source> Lexer<T> {
                 'w' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::Walkabout)?,
                 'w' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::Whatabout)?,
                 't' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,
-                'n' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::NahYeah)?,
+                'n' if self.peek_is('a') => self.eat_nah_or_yeah_or_ident(c, Kind::Nah)?,
+
                 'b' => {
                     if self.peek_is('a') {
                         self.eat_keyword_or_ident(c, Kind::Bail)?
@@ -149,6 +192,7 @@ impl<'a, T: Source> Lexer<T> {
                         self.eat_identifier(c)?
                     }
                 }
+
                 'i' => {
                     if self.peek_is('m') {
                         self.eat_keyword_or_ident(c, Kind::Import)?
@@ -168,15 +212,17 @@ impl<'a, T: Source> Lexer<T> {
                         self.eat_identifier(c)?
                     }
                 }
+
                 'y' => {
                     if self.peek_is('a') {
                         self.eat_keyword_or_ident(c, Kind::YaReckon)?
                     } else if self.peek_is('e') {
-                        self.eat_keyword_or_ident(c, Kind::YeahNah)?
+                        self.eat_nah_or_yeah_or_ident(c, Kind::Yeah)?
                     } else {
                         self.eat_identifier(c)?
                     }
                 }
+
                 '"' => self.eat_string()?,
                 _ => {
                     if c.is_digit(10) {
@@ -268,13 +314,15 @@ impl<'a, T: Source> Lexer<T> {
         Ok(Kind::Ident(s))
     }
 
-    fn expect_separator(&mut self) -> Result<()> {
-        let separated = matches!(
-            self.peek(),
+    fn is_separator(c: Option<char>) -> bool {
+        matches!(
+            c,
             Some(' ' | '\n' | ';' | ',' | '(' | ')' | '[' | ']') | None
-        );
+        )
+    }
 
-        if separated {
+    fn expect_separator(&mut self) -> Result<()> {
+        if Self::is_separator(self.peek()) {
             return Ok(());
         }
 
@@ -309,19 +357,43 @@ impl<'a, T: Source> Lexer<T> {
         }
     }
 
+    fn eat_nah_or_yeah_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {
+        let res: Result<Kind> = match self.eat_keyword(kind, false) {
+            Err(_) => self.eat_identifier(first),
+            Ok(kind) => {
+                self.peek_adv(',');
+                Ok(kind)
+            }
+        };
+        res
+    }
+
     fn eat_keyword_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {
-        let res: Result<Kind> = match self.eat_keyword(kind) {
+        let res: Result<Kind> = match self.eat_keyword(kind, true) {
             Err(_) => self.eat_identifier(first),
             Ok(kind) => Ok(kind),
         };
         res
     }
 
-    fn eat_keyword(&mut self, kind: Kind) -> Result<Kind> {
-        let s: String = kind.literal().chars().skip(1).collect();
+    fn eat_keyword(&mut self, kind: Kind, expect_separator: bool) -> Result<Kind> {
+        let after_first: String = kind.literal().chars().skip(1).collect();
+
+        let n = self.is_any_str(&after_first)?;
+
+        if expect_separator {
+            self.expect_separator()?;
+        }
+
+        // Eat peeked chars
+        self.eat_n(n);
+
+        Ok(kind)
+    }
+
+    fn is_any_str(&mut self, s: &str) -> Result<usize> {
         let len = s.len();
 
-        let mut ret: Option<Result<Kind>> = None;
         let mut expected: char;
 
         for i in 0..len {
@@ -329,35 +401,29 @@ impl<'a, T: Source> Lexer<T> {
             match self.peek_multi() {
                 None => {
                     self.src.reset_peek();
-                    ret = Some(Err(
-                        LexError::ExpectedCharacter(expected, '\0', self.line).into()
-                    ));
-                    break;
+                    return Err(LexError::ExpectedCharacter(expected, '\0', self.line).into());
                 }
                 Some(c) => {
                     if c.to_ascii_lowercase().ne(&expected) {
                         self.src.reset_peek();
-                        ret = Some(Err(
-                            LexError::ExpectedCharacter(expected, c, self.line).into()
-                        ));
-                        break;
+                        return Err(LexError::ExpectedCharacter(expected, c, self.line).into());
                     }
                 }
             };
         }
 
-        if let Some(e) = ret {
-            e
-        } else {
-            // Space, new-line, or semi-colon must separate token
-            self.expect_separator()?;
-            for _ in 0..len {
-                let _ = self.src.next();
-            }
-            Ok(kind)
-        }
+        Ok(len)
     }
 
+    fn eat_n(&mut self, n: usize) {
+        for _ in 0..n {
+            let _ = self.next();
+        }
+    }
+}
+
+// General utilities
+impl<'a, T: Source> Lexer<T> {
     fn next(&mut self) -> Option<char> {
         self.src.next()
     }
@@ -398,6 +464,10 @@ impl<'a, T: Source> Lexer<T> {
 
 #[derive(Error, Debug)]
 pub enum LexError {
+    #[error("[line {0}] OI MATE! YA NEED AT LEAST 2 'NAH's or 'YEAH's TO MAKE A BOOL!!!")]
+    TooLittleNahYeahs(usize),
+    #[error("[line {2}] OI MATE! expected {0} but got {1}")]
+    Expected(String, String, usize),
     #[error("[line {2}] OI MATE! expected {0} but got {1}")]
     ExpectedCharacter(char, char, usize),
     #[error("[line {2}] FUCK ME DEAD! EXPECTED ONE OF {0:?} BUT GOT {1}")]

@@ -63,7 +63,6 @@ pub enum Pattern {
 
 impl RuntimePartialEq<Value> for Pattern {
     fn runtime_eq(&self, other: &Value) -> bool {
-        println!("{:?} {}", self, other.to_string());
         match (self, other) {
             (Self::String(l), Value::String(r)) => l == r,
             (Self::Number(l), Value::Number(r)) => l == r,
@@ -83,8 +82,8 @@ impl From<Kind> for Option<Pattern> {
         match &kind {
             Kind::Number(n) => Some(Pattern::Number(*n)),
             Kind::String(s) => Some(Pattern::String(s.clone())),
-            Kind::NahYeah => Some(Pattern::Bool(true)),
-            Kind::YeahNah => Some(Pattern::Bool(false)),
+            Kind::True => Some(Pattern::Bool(true)),
+            Kind::False => Some(Pattern::Bool(false)),
             Kind::BuggerAll => Some(Pattern::Nil),
             Kind::Ident(ident) => Some(Pattern::Var(Var::new(
                 Ident::new(ident.clone(), 0),
@@ -100,8 +99,8 @@ impl From<Token> for Option<Pattern> {
         match &tok.kind {
             Kind::Number(n) => Some(Pattern::Number(*n)),
             Kind::String(s) => Some(Pattern::String(s.clone())),
-            Kind::NahYeah => Some(Pattern::Bool(true)),
-            Kind::YeahNah => Some(Pattern::Bool(false)),
+            Kind::True => Some(Pattern::Bool(true)),
+            Kind::False => Some(Pattern::Bool(false)),
             Kind::BuggerAll => Some(Pattern::Nil),
             Kind::Ident(ident) => Some(Pattern::Var(Var::new(
                 Ident::new(ident.clone(), tok.line()),
