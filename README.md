@@ -165,7 +165,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/jwfxpr"><img src="https://avatars.githubusercontent.com/u/20788820?v=4?s=100" width="100px;" alt=""/><br /><sub><b>jwfxpr</b></sub></a><br /><a href="https://github.com/zackradisic/aussieplusplus/commits?author=jwfxpr" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jwfxpr"><img src="https://avatars.githubusercontent.com/u/20788820?v=4?s=100" width="100px;" alt=""/><br /><sub><b>jwfxpr</b></sub></a><br /><a href="https://github.com/zackradisic/aussieplusplus/commits?author=jwfxpr" title="Code">💻</a> <a href="#example-jwfxpr" title="Examples">💡</a></td>
   </tr>
 </table>
 
