@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "jwfxpr",
+      "name": "jwfxpr",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20788820?v=4",
+      "profile": "https://github.com/jwfxpr",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "aussieplusplus",
+  "projectOwner": "zackradisic",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
