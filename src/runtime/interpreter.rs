@@ -85,18 +85,18 @@ impl<'a> Interpreter<'a> {
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
             Stmt::Import(ident) => {
-                match BuiltIn::lookup(&ident.name()) {
+                match BuiltIn::lookup(&ident.name) {
                     None => {
                         return Err(RuntimeError::UnknownImport(
                             ident.line(),
-                            ident.name().to_string(),
+                            ident.name.to_string(),
                         )
                         .into());
                     }
-                    Some(builtin) => self
-                        .env
-                        .borrow_mut()
-                        .define(builtin.name(), Value::Callable(Rc::new(builtin.into()))),
+                    Some(builtin) => self.env.borrow_mut().define(
+                        builtin.name().clone(),
+                        Value::Callable(Rc::new(builtin.into())),
+                    ),
                 };
                 Ok(None)
             }
@@ -116,7 +116,7 @@ impl<'a> Interpreter<'a> {
 
                 self.env
                     .borrow_mut()
-                    .define(fn_decl.name(), Value::Callable(Rc::new(function)));
+                    .define(fn_decl.name().clone(), Value::Callable(Rc::new(function)));
 
                 Ok(None)
             }
@@ -139,7 +139,7 @@ impl<'a> Interpreter<'a> {
                     Some(expr_node) => self.evaluate(expr_node)?,
                 };
 
-                self.env.borrow_mut().define(ident.name(), value);
+                self.env.borrow_mut().define(ident.name.clone(), value);
 
                 Ok(None)
             }
@@ -191,7 +191,7 @@ impl<'a> Interpreter<'a> {
                     None
                 };
 
-                env.define(var.unwrap().name(), val);
+                env.define(var.unwrap().name().clone(), val);
 
                 self.execute_block(&branch.body, Rc::new(RefCell::new(env)))
             }
@@ -303,7 +303,9 @@ impl<'a> Interpreter<'a> {
             }
             Expr::Assign(ref var, ref expr) => {
                 let value = self.evaluate(expr)?;
-                self.env.borrow_mut().assign(var.name(), value.clone());
+                self.env
+                    .borrow_mut()
+                    .assign(var.name().clone(), value.clone());
                 Ok(value)
             }
             Expr::Var(ref var) => self.lookup(var).map_or_else(

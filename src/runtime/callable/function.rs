@@ -1,7 +1,6 @@
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use anyhow::Result;
-use itertools::Itertools;
 
 use crate::{
     ast::FnDecl,
@@ -31,7 +30,7 @@ impl AussieCallable for Function {
         }
     }
 
-    fn name(&self) -> Rc<String> {
+    fn name(&self) -> &Rc<str> {
         match self {
             Function::UserDefined(func) => func.name(),
             Function::BuiltIn(func) => func.name(),
@@ -66,7 +65,7 @@ impl AussieCallable for UserDefined {
         let mut env = Environment::new_with_enclosing(self.env.clone());
 
         for (parameter, value) in self.decl.params.iter().zip(args.iter()) {
-            env.define(parameter.name(), value.clone());
+            env.define(parameter.name.clone(), value.clone());
         }
 
         if let Some(ExitKind::Return(val)) = interpreter.execute_block(
@@ -85,7 +84,7 @@ impl AussieCallable for UserDefined {
         self.decl.params.len() as u8
     }
 
-    fn name(&self) -> Rc<String> {
+    fn name(&self) -> &Rc<str> {
         self.decl.name()
     }
 }
