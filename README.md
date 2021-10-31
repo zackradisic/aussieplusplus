@@ -166,7 +166,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/jwfxpr"><img src="https://avatars.githubusercontent.com/u/20788820?v=4?s=100" width="100px;" alt=""/><br /><sub><b>jwfxpr</b></sub></a><br /><a href="https://github.com/zackradisic/aussieplusplus/commits?author=jwfxpr" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/bbrk24"><img src="https://avatars.githubusercontent.com/u/25109429?v=4?s=100" width="100px;" alt=""/><br /><sub><b>bbrk24</b></sub></a><br /><a href="#ideas-bbrk24" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/bbrk24"><img src="https://avatars.githubusercontent.com/u/25109429?v=4?s=100" width="100px;" alt=""/><br /><sub><b>bbrk24</b></sub></a><br /><a href="#ideas-bbrk24" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/zackradisic/aussieplusplus/issues?q=author%3Abbrk24" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
