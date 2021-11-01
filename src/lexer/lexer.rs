@@ -185,6 +185,13 @@ impl<'a, T: Source> Lexer<T> {
                 'i' if self.peek_is('s') => self.eat_is_or_isa(c)?,
                 'm' => self.eat_keyword_or_ident(c, Kind::MateFuckThis)?,
                 'n' => self.eat_nah_or_yeah_or_ident(c, Kind::Nah)?,
+                'o' => {
+                    if let Some(tok) = self.eat_block_comment_or_ident(c)? {
+                        tok
+                    } else {
+                        return self.next_token();
+                    }
+                }
                 'p' => self.eat_keyword_or_ident(c, Kind::PullYaHeadIn)?,
                 't' if self.peek_is('o') => self.eat_keyword_or_ident(c, Kind::To)?,
                 't' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,
@@ -334,6 +341,34 @@ impl<'a, T: Source> Lexer<T> {
             Kind::Ident(maybe_is) if maybe_is.to_ascii_lowercase() == "is" => Ok(Kind::Is),
             ident => Ok(ident),
         }
+    }
+
+    fn eat_block_comment_or_ident(&mut self, first: char) -> Result<Option<Kind>> {
+        match self.eat_keyword_or_ident(first, Kind::OiMate) {
+            Err(_) => Ok(Some(self.eat_identifier(first)?)),
+            Ok(_) => {
+                self.eat_block_comment()?;
+                Ok(None)
+            }
+        }
+    }
+
+    fn eat_block_comment(&mut self) -> Result<()> {
+        loop {
+            match self.next().map(|c| c.to_ascii_lowercase()) {
+                None => break,
+                Some('\n') => {
+                    self.line += 1;
+                }
+                Some('g') => {
+                    if self.eat_keyword(Kind::GotIt, true).is_ok() {
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(())
     }
 
     fn eat_nah_or_yeah_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {

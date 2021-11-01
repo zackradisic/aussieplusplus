@@ -72,6 +72,8 @@ pub enum Kind {
     Bail,         // bail (return)
     True,         // true
     False,        // false
+    OiMate,       // OI MATE! (start of block comment)
+    GotIt,        // GOT IT? (end of block comment)
 
     // A sequence of Yeah/Nahs followed by a ! will be transformed
     // into one NahYeah or YeahNah. The parser will never see these tokens.
@@ -87,6 +89,8 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::OiMate => "oi mate!",
+            Kind::GotIt => "got it?",
             Kind::GoodOnYa => "good on ya",
             Kind::PullYaHeadIn => "pull ya head in",
             Kind::Import => "impoht me func",

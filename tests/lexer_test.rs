@@ -53,6 +53,29 @@ pub fn test_lex_fully_reckon() {
 }
 
 #[test]
+pub fn test_lex_block_comment() {
+    test_lexing(
+        "OI MATE!
+        everything inside of this is a comment
+        GOT IT?",
+        vec![Token::new(Kind::EOF, 3)],
+        false,
+    );
+
+    test_lexing(
+        "5 + OI MATE! inside an expression GOT IT? 12;",
+        vec![
+            Token::new(Kind::Number(5f64), 1),
+            Token::new(Kind::Plus, 1),
+            Token::new(Kind::Number(12f64), 1),
+            Token::new(Kind::Semicolon, 1),
+            Token::new(Kind::EOF, 1),
+        ],
+        false,
+    );
+}
+
+#[test]
 pub fn test_lex_bool() {
     test_lexing(
         "NAH YEAH NAH YEAH!",
