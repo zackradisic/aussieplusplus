@@ -206,15 +206,28 @@ impl Resolver {
         self.scopes.pop();
     }
 
-    fn resolve_local(&mut self, var: &mut AstVar) -> &mut Var {
+    fn resolve_local(&mut self, var: &mut AstVar) -> Option<&mut Var> {
         for (i, scope) in self.scopes.iter_mut().rev().enumerate() {
             if let Some(v) = scope.get_mut(&*var.name()) {
                 var.scope_distance = i;
-                return v;
+                return Some(v);
             }
         }
 
-        panic!("Unable to resolve var: {:?}", var)
+        // Bug in borrow checker won't allow the code below to compile so just paste it in here for now
+        self.had_error = true;
+        eprintln!(
+            "[line {}] {}: CAAARN! THAT VAR ISN'T DEFINED YA DAFT BUGGER!",
+            var.line(),
+            var.name()
+        );
+        // self.print_error(
+        //     var.line(),
+        //     var.name(),
+        //     "CAAARN! THAT VAR ISN'T DEFINED YA DAFT BUGGER!",
+        // );
+
+        None
     }
 
     fn resolve_fn(&mut self, decl: &mut FnDecl, kind: FunctionKind) {
@@ -284,9 +297,10 @@ impl Resolver {
 
     fn expr_assign(&mut self, var: &mut AstVar, init: &mut ExprNode) {
         self.expr(init.expr_mut());
-        let v = self.resolve_local(var);
-        if v.immutable {
-            self.print_error(var.line(), &var.name(), "OI, YA CAN'T REDEFINE THIS!")
+        if let Some(v) = self.resolve_local(var) {
+            if v.immutable {
+                self.print_error(var.line(), var.name(), "OI, YA CAN'T REDEFINE THIS!")
+            }
         }
     }
 }

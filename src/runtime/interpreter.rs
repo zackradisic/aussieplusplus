@@ -409,6 +409,7 @@ impl<'a> Interpreter<'a> {
                 (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
                 (Value::String(a), Value::String(b)) => Ok(Value::String(a + &b)),
                 (Value::String(a), b) => Ok(Value::String(a.add(b.to_string().as_str()))),
+                (a, Value::String(b)) => Ok(Value::String(b.add(a.to_string().as_str()))),
                 _ => Err(RuntimeError::new_syntax(
                     "Both operands cannot be converted to strings",
                     line,
