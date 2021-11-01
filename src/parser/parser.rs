@@ -188,7 +188,6 @@ impl Parser {
                 self.consume(Kind::To)?;
                 let end = {
                     let expr = self.expression()?;
-                    println!("EXpr is: {:?}", expr);
                     match_toks!(self,
                         k =>
                         return Err(ParseError::ExpectedTokens(
