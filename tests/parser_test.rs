@@ -295,6 +295,32 @@ fn test_parse_if() {
 
 #[test]
 fn test_parse_unary_op() {
+    test_parse("GOOD ON YA 1;", |stmts| {
+        assert_eq!(
+            stmts[0],
+            Stmt::Expr(ExprNode::new(
+                Expr::Unary(
+                    UnaryOp::Incr,
+                    Box::new(ExprNode::new(Expr::Literal(1.into()), 1)),
+                ),
+                1
+            ))
+        );
+    });
+
+    test_parse("PULL YA HEAD IN 1;", |stmts| {
+        assert_eq!(
+            stmts[0],
+            Stmt::Expr(ExprNode::new(
+                Expr::Unary(
+                    UnaryOp::Decr,
+                    Box::new(ExprNode::new(Expr::Literal(1.into()), 1)),
+                ),
+                1
+            ))
+        );
+    });
+
     test_parse("!1;", |stmts| {
         assert_eq!(
             stmts[0],

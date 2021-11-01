@@ -22,6 +22,7 @@ impl Token {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
+    // Operators
     Modulo,         // %
     Tilde,          // ~
     QuestionMark,   // ?
@@ -45,28 +46,32 @@ pub enum Kind {
     BangEqual,      // !=
     And,            // &&
     Or,             // ||
-    Import,         // IMPOHT ME FUNC
-    FuckinPiker,    // FUCKINPIKER (early exit)
-    MateFuckThis,   // mate fuck this (break)
-    Until,          // until
-    From,           // from
-    To,             // to
-    Gimme,          // gimme
-    Is,             // (is)
-    Isa,            // (is a)
-    BuggerAll,      // Bugger all (nil/null)
-    Cheers,         // Cheers C***! (end of program)
-    Whatabout,      // Whatabout (else)
-    IllHaveA,       //  I'll Have a
-    Walkabout,      // Walkabout (for loop)
-    GdayMate,       // G'DAY MATE! (program start)
-    IReckon,        // I reckon (var decl)
-    IFullyReckon,   // I fully reckon (constant var decl)
-    YaReckon,       // Ya reckon (analogous to if)
-    HardYakkaFor,   // Hard yakka for (function decl)
-    Bail,           // bail (return)
-    True,           // true
-    False,          // false
+    GoodOnYa,       // GOOD ON YA
+    PullYaHeadIn,   // PullYaHeadIn
+
+    // Keywords
+    Import,       // IMPOHT ME FUNC
+    FuckinPiker,  // FUCKINPIKER (early exit)
+    MateFuckThis, // mate fuck this (break)
+    Until,        // until
+    From,         // from
+    To,           // to
+    Gimme,        // gimme
+    Is,           // (is)
+    Isa,          // (is a)
+    BuggerAll,    // Bugger all (nil/null)
+    Cheers,       // Cheers C***! (end of program)
+    Whatabout,    // Whatabout (else)
+    IllHaveA,     //  I'll Have a
+    Walkabout,    // Walkabout (for loop)
+    GdayMate,     // G'DAY MATE! (program start)
+    IReckon,      // I reckon (var decl)
+    IFullyReckon, // I fully reckon (constant var decl)
+    YaReckon,     // Ya reckon (analogous to if)
+    HardYakkaFor, // Hard yakka for (function decl)
+    Bail,         // bail (return)
+    True,         // true
+    False,        // false
 
     // A sequence of Yeah/Nahs followed by a ! will be transformed
     // into one NahYeah or YeahNah. The parser will never see these tokens.
@@ -82,6 +87,8 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::GoodOnYa => "good on ya",
+            Kind::PullYaHeadIn => "pull ya head in",
             Kind::Import => "impoht me func",
             Kind::FuckinPiker => "fuckinpiker",
             Kind::Modulo => "%",

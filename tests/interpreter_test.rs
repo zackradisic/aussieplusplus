@@ -391,6 +391,13 @@ fn test_ops() {
         gimme !YEAH YEAH YEAH YEAH NAH YEAH!;",
         "Nah, yeah!\nYeah, nah!",
     );
+    test_code("gimme pull ya head in 70;", "69");
+    test_code("gimme good on ya 68;", "69");
+    test_code("gimme good on ya good on ya good on ya 417;", "420");
+    test_code(
+        "gimme pull ya head in pull ya head in pull ya head in 423;",
+        "420",
+    );
 
     test_code("gimme 5 + 2;", "7");
     test_code("gimme 5 - 2;", "3");

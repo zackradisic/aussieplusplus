@@ -540,7 +540,7 @@ impl Parser {
 
     fn unary(&mut self) -> Result<ExprNode> {
         match self.peek().kind() {
-            Kind::Minus | Kind::Bang => {
+            Kind::Minus | Kind::Bang | Kind::GoodOnYa | Kind::PullYaHeadIn => {
                 let tok = self.advance();
                 let op: Option<UnaryOp> = tok.kind().into();
                 let right = self.unary()?;

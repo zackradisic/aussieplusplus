@@ -305,6 +305,24 @@ fn test_lex_walkabout() {
 }
 
 #[test]
+pub fn test_lex_incr_decr_ops() {
+    test_lexing(
+        "GOOD ON YA x;
+        PULL YA HEAD IN x;",
+        vec![
+            Token::new(Kind::GoodOnYa, 1),
+            Token::new(Kind::Ident("x".into()), 1),
+            Token::new(Kind::Semicolon, 1),
+            Token::new(Kind::PullYaHeadIn, 2),
+            Token::new(Kind::Ident("x".into()), 2),
+            Token::new(Kind::Semicolon, 2),
+            Token::new(Kind::EOF, 2),
+        ],
+        false,
+    );
+}
+
+#[test]
 pub fn test_operators() {
     test_lexing(
         "5 < 10",

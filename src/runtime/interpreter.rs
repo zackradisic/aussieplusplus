@@ -327,6 +327,8 @@ impl<'a> Interpreter<'a> {
                 match (op, right) {
                     (UnaryOp::Bang, right) => Ok(Value::Bool(!Self::is_truthy(&right))),
                     (UnaryOp::Minus, Value::Number(right)) => Ok(Value::Number(right * -1f64)),
+                    (UnaryOp::Incr, Value::Number(right)) => Ok(Value::Number(right + 1f64)),
+                    (UnaryOp::Decr, Value::Number(right)) => Ok(Value::Number(right - 1f64)),
                     _ => {
                         Err(RuntimeError::new_syntax("invalid unary operation", expr.line()).into())
                     }
