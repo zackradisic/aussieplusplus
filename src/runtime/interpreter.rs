@@ -14,7 +14,7 @@ use std::{
 use crate::{
     ast::{
         BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp,
-        Var, WhileLoop,
+        Var, VarDecl, WhileLoop,
     },
     parser::error::ParseError,
     runtime::AussieCallable,
@@ -133,7 +133,9 @@ impl<'a> Interpreter<'a> {
                 let _ = self.evaluate(expr_node)?;
                 Ok(None)
             }
-            Stmt::VarDecl(ident, initializer) => {
+            Stmt::VarDecl(VarDecl {
+                ident, initializer, ..
+            }) => {
                 let value = match initializer {
                     None => Value::Nil,
                     Some(expr_node) => self.evaluate(expr_node)?,

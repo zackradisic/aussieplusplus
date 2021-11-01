@@ -36,6 +36,21 @@ fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
         lexer::source::Regular::new(src.chars()),
     )
 }
+#[test]
+pub fn test_lex_fully_reckon() {
+    test_lexing(
+        "I FULLY RECKON x = 5;",
+        vec![
+            Token::new(Kind::IFullyReckon, 1),
+            Token::new(Kind::Ident("x".into()), 1),
+            Token::new(Kind::Assign, 1),
+            Token::new(Kind::Number(5f64), 1),
+            Token::new(Kind::Semicolon, 1),
+            Token::new(Kind::EOF, 1),
+        ],
+        false,
+    );
+}
 
 #[test]
 pub fn test_lex_bool() {
@@ -64,6 +79,18 @@ pub fn test_lex_bool() {
         NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH
         YEAH YEAH YEAH YEAH YEAH YEAH NAH!",
         vec![Token::new(Kind::False, 3), Token::new(Kind::EOF, 3)],
+        false,
+    );
+
+    test_lexing(
+        "!NAH YEAH NAH
+        NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH
+        YEAH YEAH YEAH YEAH YEAH YEAH NAH!",
+        vec![
+            Token::new(Kind::Bang, 1),
+            Token::new(Kind::False, 3),
+            Token::new(Kind::EOF, 3),
+        ],
         false,
     );
 }

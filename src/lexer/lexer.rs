@@ -197,7 +197,7 @@ impl<'a, T: Source> Lexer<T> {
                     if self.peek_is('m') {
                         self.eat_keyword_or_ident(c, Kind::Import)?
                     } else if self.peek_is(' ') {
-                        self.eat_keyword_or_ident(c, Kind::IReckon)?
+                        self.eat_reckon_or_fully_reckon(c)?
                     } else if self.peek_is('s') {
                         match self.eat_keyword_or_ident(c, Kind::Isa)? {
                             Kind::Isa => Kind::Isa,
@@ -368,6 +368,14 @@ impl<'a, T: Source> Lexer<T> {
         res
     }
 
+    fn eat_reckon_or_fully_reckon(&mut self, first: char) -> Result<Kind> {
+        if self.peek_n_is(2, 'f', false) {
+            self.eat_keyword_or_ident(first, Kind::IFullyReckon)
+        } else {
+            self.eat_keyword_or_ident(first, Kind::IReckon)
+        }
+    }
+
     fn eat_keyword_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {
         let res: Result<Kind> = match self.eat_keyword(kind, true) {
             Err(_) => self.eat_identifier(first),
@@ -438,6 +446,27 @@ impl<'a, T: Source> Lexer<T> {
         match self.peek() {
             Some(ch) => ch.to_ascii_lowercase().eq(&c),
             None => false,
+        }
+    }
+
+    fn peek_n(&mut self, n: usize) -> Option<char> {
+        for _ in 0..(n - 1) {
+            let _ = self.peek_multi();
+        }
+        let c = self.peek_multi();
+        self.src.reset_peek();
+        c
+    }
+
+    fn peek_n_is(&mut self, n: usize, c: char, case_sensitive: bool) -> bool {
+        if let Some(ch) = self.peek_n(n) {
+            if case_sensitive {
+                ch == c
+            } else {
+                ch.to_ascii_lowercase() == c
+            }
+        } else {
+            false
         }
     }
 

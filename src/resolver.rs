@@ -1,7 +1,9 @@
 use std::{collections::HashMap, mem, rc::Rc};
 
 use crate::{
-    ast::{Expr, ExprNode, FnDecl, ForLoop, Ident, If, Match, Pattern, Stmt, Var as AstVar},
+    ast::{
+        Expr, ExprNode, FnDecl, ForLoop, Ident, If, Match, Pattern, Stmt, Var as AstVar, VarDecl,
+    },
     token::Token,
 };
 
@@ -50,7 +52,11 @@ impl Resolver {
     fn stmt(&mut self, stmt: &mut Stmt) {
         match stmt {
             Stmt::Block(stmts) => self.block_stmt(stmts),
-            Stmt::VarDecl(name, init) => self.var_stmt(name, init),
+            Stmt::VarDecl(VarDecl {
+                ident,
+                initializer,
+                immutable,
+            }) => self.var_stmt(ident, initializer, *immutable),
             Stmt::FnDecl(decl) => self.func_stmt(decl, FunctionKind::Function),
             Stmt::If(If { cond, then, else_ }) => self.if_stmt(cond, then, else_),
             Stmt::Print(expr) => self.print_stmt(expr),
@@ -71,8 +77,8 @@ impl Resolver {
         self.end_scope();
     }
 
-    fn var_stmt(&mut self, name: &Ident, init: &mut Option<ExprNode>) {
-        self.declare(name, false);
+    fn var_stmt(&mut self, name: &Ident, init: &mut Option<ExprNode>, constant: bool) {
+        self.declare(name, constant);
         if let Some(init) = init {
             self.expr(init.expr_mut());
         }
