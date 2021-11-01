@@ -22,6 +22,7 @@ impl Token {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
+    // Operators
     Modulo,         // %
     Tilde,          // ~
     QuestionMark,   // ?
@@ -45,27 +46,34 @@ pub enum Kind {
     BangEqual,      // !=
     And,            // &&
     Or,             // ||
-    Import,         // IMPOHT ME FUNC
-    FuckinPiker,    // FUCKINPIKER (early exit)
-    MateFuckThis,   // mate fuck this (break)
-    Until,          // until
-    From,           // from
-    To,             // to
-    Gimme,          // gimme
-    Is,             // (is)
-    Isa,            // (is a)
-    BuggerAll,      // Bugger all (nil/null)
-    Cheers,         // Cheers C***! (end of program)
-    Whatabout,      // Whatabout (else)
-    IllHaveA,       //  I'll Have a
-    Walkabout,      // Walkabout (for loop)
-    GdayMate,       // G'DAY MATE! (program start)
-    IReckon,        // I reckon (var decl)
-    YaReckon,       // Ya reckon (analogous to if)
-    HardYakkaFor,   // Hard yakka for (function decl)
-    Bail,           // bail (return)
-    True,           // true
-    False,          // false
+    GoodOnYa,       // GOOD ON YA
+    PullYaHeadIn,   // PullYaHeadIn
+
+    // Keywords
+    Import,       // IMPOHT ME FUNC
+    FuckinPiker,  // FUCKINPIKER (early exit)
+    MateFuckThis, // mate fuck this (break)
+    Until,        // until
+    From,         // from
+    To,           // to
+    Gimme,        // gimme
+    Is,           // (is)
+    Isa,          // (is a)
+    BuggerAll,    // Bugger all (nil/null)
+    Cheers,       // Cheers C***! (end of program)
+    Whatabout,    // Whatabout (else)
+    IllHaveA,     //  I'll Have a
+    Walkabout,    // Walkabout (for loop)
+    GdayMate,     // G'DAY MATE! (program start)
+    IReckon,      // I reckon (var decl)
+    IFullyReckon, // I fully reckon (constant var decl)
+    YaReckon,     // Ya reckon (analogous to if)
+    HardYakkaFor, // Hard yakka for (function decl)
+    Bail,         // bail (return)
+    True,         // true
+    False,        // false
+    OiMate,       // OI MATE! (start of block comment)
+    GotIt,        // GOT IT? (end of block comment)
 
     // A sequence of Yeah/Nahs followed by a ! will be transformed
     // into one NahYeah or YeahNah. The parser will never see these tokens.
@@ -81,6 +89,10 @@ pub enum Kind {
 impl Kind {
     pub fn literal(&self) -> String {
         match self {
+            Kind::OiMate => "oi mate!",
+            Kind::GotIt => "got it?",
+            Kind::GoodOnYa => "good on ya",
+            Kind::PullYaHeadIn => "pull ya head in",
             Kind::Import => "impoht me func",
             Kind::FuckinPiker => "fuckinpiker",
             Kind::Modulo => "%",
@@ -120,6 +132,7 @@ impl Kind {
             Kind::Walkabout => "walkabout", // Walkabout (for loop)
             Kind::GdayMate => "g'day mate!", // G'DAY MATE! (program start)
             Kind::IReckon => "i reckon",    // I reckon (var decl)
+            Kind::IFullyReckon => "i fully reckon", // I fully reckon (constant var decl)
             Kind::YaReckon => "ya reckon",  // Ya reckon (analogous to if)
             Kind::HardYakkaFor => "the hard yakka for", // Hard yakka for (function decl)
             Kind::Bail => "bail",           // bail (return)

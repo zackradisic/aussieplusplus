@@ -36,6 +36,44 @@ fn test_lexing(src: &str, expected_tokens: Vec<Token>, expected_error: bool) {
         lexer::source::Regular::new(src.chars()),
     )
 }
+#[test]
+pub fn test_lex_fully_reckon() {
+    test_lexing(
+        "I FULLY RECKON x = 5;",
+        vec![
+            Token::new(Kind::IFullyReckon, 1),
+            Token::new(Kind::Ident("x".into()), 1),
+            Token::new(Kind::Assign, 1),
+            Token::new(Kind::Number(5f64), 1),
+            Token::new(Kind::Semicolon, 1),
+            Token::new(Kind::EOF, 1),
+        ],
+        false,
+    );
+}
+
+#[test]
+pub fn test_lex_block_comment() {
+    test_lexing(
+        "OI MATE!
+        everything inside of this is a comment
+        GOT IT?",
+        vec![Token::new(Kind::EOF, 3)],
+        false,
+    );
+
+    test_lexing(
+        "5 + OI MATE! inside an expression GOT IT? 12;",
+        vec![
+            Token::new(Kind::Number(5f64), 1),
+            Token::new(Kind::Plus, 1),
+            Token::new(Kind::Number(12f64), 1),
+            Token::new(Kind::Semicolon, 1),
+            Token::new(Kind::EOF, 1),
+        ],
+        false,
+    );
+}
 
 #[test]
 pub fn test_lex_bool() {
@@ -64,6 +102,18 @@ pub fn test_lex_bool() {
         NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH
         YEAH YEAH YEAH YEAH YEAH YEAH NAH!",
         vec![Token::new(Kind::False, 3), Token::new(Kind::EOF, 3)],
+        false,
+    );
+
+    test_lexing(
+        "!NAH YEAH NAH
+        NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH
+        YEAH YEAH YEAH YEAH YEAH YEAH NAH!",
+        vec![
+            Token::new(Kind::Bang, 1),
+            Token::new(Kind::False, 3),
+            Token::new(Kind::EOF, 3),
+        ],
         false,
     );
 }
@@ -272,6 +322,24 @@ fn test_lex_walkabout() {
             Token::new(Kind::Number(1f64), 2),
             Token::new(Kind::RightBoomerang, 3),
             Token::new(Kind::EOF, 3),
+        ],
+        false,
+    );
+}
+
+#[test]
+pub fn test_lex_incr_decr_ops() {
+    test_lexing(
+        "GOOD ON YA x;
+        PULL YA HEAD IN x;",
+        vec![
+            Token::new(Kind::GoodOnYa, 1),
+            Token::new(Kind::Ident("x".into()), 1),
+            Token::new(Kind::Semicolon, 1),
+            Token::new(Kind::PullYaHeadIn, 2),
+            Token::new(Kind::Ident("x".into()), 2),
+            Token::new(Kind::Semicolon, 2),
+            Token::new(Kind::EOF, 2),
         ],
         false,
     );

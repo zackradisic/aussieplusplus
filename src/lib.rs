@@ -43,7 +43,6 @@ pub fn interpret_repl(src: &str, interpreter: &mut Interpreter, parser: &mut Par
 }
 
 pub fn interpret_upside_down(src: &str) -> Result<()> {
-    println!("Upside down mode");
     let mut lex = lexer::Lexer::new(lexer::source::UpsideDown::new(src.chars()));
     let (tokens, _) = lex.lex();
 

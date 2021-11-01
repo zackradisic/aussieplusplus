@@ -6,6 +6,8 @@ use crate::token::Kind;
 pub enum UnaryOp {
     Bang,
     Minus,
+    Incr,
+    Decr,
 }
 
 impl From<Kind> for Option<UnaryOp> {
@@ -13,6 +15,8 @@ impl From<Kind> for Option<UnaryOp> {
         match kind {
             Kind::Bang => Some(UnaryOp::Bang),
             Kind::Minus => Some(UnaryOp::Minus),
+            Kind::GoodOnYa => Some(UnaryOp::Incr),
+            Kind::PullYaHeadIn => Some(UnaryOp::Decr),
             _ => None,
         }
     }

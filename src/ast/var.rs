@@ -1,5 +1,14 @@
 use std::{fmt::Display, rc::Rc};
 
+use super::ExprNode;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct VarDecl {
+    pub ident: Ident,
+    pub initializer: Option<ExprNode>,
+    pub immutable: bool,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Var {
     pub ident: Ident,

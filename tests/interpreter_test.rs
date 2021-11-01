@@ -5,7 +5,13 @@ use aussie_plus_plus::{
     runtime::Interpreter,
 };
 
-fn test_code(src: &str, expected: &str) {
+enum FallibleKind {
+    None,
+    Resolver,
+    Interpreter,
+}
+
+fn test(src: &str, expected: &str, fallible_kind: FallibleKind) {
     let expected = if expected.is_empty() {
         expected.to_owned()
     } else {
@@ -14,20 +20,33 @@ fn test_code(src: &str, expected: &str) {
     let mut s = "G'DAY MATE! ".to_string();
     s.push_str(src);
     let mut lex = Lexer::new(source::Regular::new(s.chars()));
-    let (tokens, _) = lex.lex();
+    let (tokens, failed) = lex.lex();
+
+    if failed {
+        panic!("Lexing failed");
+    }
+
     println!("Tokens: {:#?}", tokens);
     let mut parser = Parser::new(tokens);
     let mut stmts = parser.parse().unwrap();
 
     if Resolver::new().resolve(&mut stmts) {
-        panic!("Resolver failed")
+        if !matches!(fallible_kind, FallibleKind::Resolver) {
+            panic!("Resolver failed")
+        } else {
+            return;
+        }
     }
 
     let mut buf: Vec<u8> = Vec::with_capacity(128);
     let mut iptr = Interpreter::new_with_writer(&mut buf);
 
     if let Err(e) = iptr.interpret(stmts) {
-        panic!("Failed to interpret: {}", e);
+        if !matches!(fallible_kind, FallibleKind::Interpreter) {
+            panic!("Failed to interpret: {}", e);
+        } else {
+            return;
+        }
     }
 
     println!("Testing expression: {}", s);
@@ -37,6 +56,22 @@ fn test_code(src: &str, expected: &str) {
             assert_eq!(s, expected);
         }
     }
+}
+
+fn test_code(src: &str, expected: &str) {
+    test(src, expected, FallibleKind::None)
+}
+
+#[test]
+fn test_constants() {
+    test(
+        "
+        I FULLY RECKON x = 420;
+        GIMME x;
+        x = 69;",
+        "420",
+        FallibleKind::Resolver,
+    );
 }
 
 #[test]
@@ -351,6 +386,19 @@ WHATABOUT ? GIMME \"the universe is okay\";",
 
 #[test]
 fn test_ops() {
+    test_code(
+        "gimme !NAH YEAH YEAH YEAH YEAH YEAH YEAH NAH!;
+        gimme !YEAH YEAH YEAH YEAH NAH YEAH!;",
+        "Nah, yeah!\nYeah, nah!",
+    );
+    test_code("gimme pull ya head in 70;", "69");
+    test_code("gimme good on ya 68;", "69");
+    test_code("gimme good on ya good on ya good on ya 417;", "420");
+    test_code(
+        "gimme pull ya head in pull ya head in pull ya head in 423;",
+        "420",
+    );
+
     test_code("gimme 5 + 2;", "7");
     test_code("gimme 5 - 2;", "3");
     test_code("gimme 5 * 2;", "10");

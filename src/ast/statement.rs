@@ -1,6 +1,6 @@
 use crate::token::Token;
 
-use super::{ExprNode, FnDecl, ForLoop, Ident, If, Match, WhileLoop};
+use super::{ExprNode, FnDecl, ForLoop, Ident, If, Match, VarDecl, WhileLoop};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Stmt {
@@ -8,7 +8,7 @@ pub enum Stmt {
     Block(Vec<Stmt>),
     If(If),
     Match(Match),
-    VarDecl(Ident, Option<ExprNode>),
+    VarDecl(VarDecl),
     FnDecl(FnDecl),
     Print(ExprNode),
     For(Box<ForLoop>),
@@ -35,7 +35,7 @@ impl Stmt {
             Self::Block(_) => "block",
             Self::If(_) => "if",
             Self::Match(_) => "match",
-            Self::VarDecl(_, _) => "var decl",
+            Self::VarDecl(_) => "var decl",
             Self::FnDecl(_) => "fn decl",
             Self::Print(_) => "print",
             Self::For(_) => "for",

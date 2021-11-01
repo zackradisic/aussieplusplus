@@ -14,7 +14,7 @@ use std::{
 use crate::{
     ast::{
         BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp,
-        Var, WhileLoop,
+        Var, VarDecl, WhileLoop,
     },
     parser::error::ParseError,
     runtime::AussieCallable,
@@ -133,7 +133,9 @@ impl<'a> Interpreter<'a> {
                 let _ = self.evaluate(expr_node)?;
                 Ok(None)
             }
-            Stmt::VarDecl(ident, initializer) => {
+            Stmt::VarDecl(VarDecl {
+                ident, initializer, ..
+            }) => {
                 let value = match initializer {
                     None => Value::Nil,
                     Some(expr_node) => self.evaluate(expr_node)?,
@@ -325,6 +327,8 @@ impl<'a> Interpreter<'a> {
                 match (op, right) {
                     (UnaryOp::Bang, right) => Ok(Value::Bool(!Self::is_truthy(&right))),
                     (UnaryOp::Minus, Value::Number(right)) => Ok(Value::Number(right * -1f64)),
+                    (UnaryOp::Incr, Value::Number(right)) => Ok(Value::Number(right + 1f64)),
+                    (UnaryOp::Decr, Value::Number(right)) => Ok(Value::Number(right - 1f64)),
                     _ => {
                         Err(RuntimeError::new_syntax("invalid unary operation", expr.line()).into())
                     }
@@ -405,6 +409,7 @@ impl<'a> Interpreter<'a> {
                 (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
                 (Value::String(a), Value::String(b)) => Ok(Value::String(a + &b)),
                 (Value::String(a), b) => Ok(Value::String(a.add(b.to_string().as_str()))),
+                (a, Value::String(b)) => Ok(Value::String(b.add(a.to_string().as_str()))),
                 _ => Err(RuntimeError::new_syntax(
                     "Both operands cannot be converted to strings",
                     line,

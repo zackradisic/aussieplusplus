@@ -170,60 +170,38 @@ impl<'a, T: Source> Lexer<T> {
                 }
             }
             c => match c.to_ascii_lowercase() {
+                // Please keep these alphabetical
+                'b' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::Bail)?,
+                'b' if self.peek_is('u') => self.eat_keyword_or_ident(c, Kind::BuggerAll)?,
+                'c' => self.eat_keyword_or_ident(c, Kind::Cheers)?,
                 'f' if self.peek_is('u') => self.eat_keyword_or_ident(c, Kind::FuckinPiker)?,
-                'm' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::MateFuckThis)?,
-                'u' if self.peek_is('n') => self.eat_keyword_or_ident(c, Kind::Until)?,
-                't' if self.peek_is('o') => self.eat_keyword_or_ident(c, Kind::To)?,
                 'f' if self.peek_is('r') => self.eat_keyword_or_ident(c, Kind::From)?,
                 'g' if self.peek_is('i') => self.eat_keyword_or_ident(c, Kind::Gimme)?,
+                'g' if self.peek_is('o') => self.eat_keyword_or_ident(c, Kind::GoodOnYa)?,
                 'g' if self.peek_is('\'') => self.eat_keyword_or_ident(c, Kind::GdayMate)?,
-                'c' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::Cheers)?,
+                'i' if self.peek_is('m') => self.eat_keyword_or_ident(c, Kind::Import)?,
+                'i' if self.peek_is('\'') => self.eat_keyword_or_ident(c, Kind::IllHaveA)?,
+                'i' if self.peek_is(' ') => self.eat_reckon_or_fully_reckon(c)?,
+                'i' if self.peek_is('s') => self.eat_is_or_isa(c)?,
+                'm' => self.eat_keyword_or_ident(c, Kind::MateFuckThis)?,
+                'n' => self.eat_nah_or_yeah_or_ident(c, Kind::Nah)?,
+                'o' => {
+                    if let Some(tok) = self.eat_block_comment_or_ident(c)? {
+                        tok
+                    } else {
+                        return self.next_token();
+                    }
+                }
+                'p' => self.eat_keyword_or_ident(c, Kind::PullYaHeadIn)?,
+                't' if self.peek_is('o') => self.eat_keyword_or_ident(c, Kind::To)?,
+                't' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,
+                'u' => self.eat_keyword_or_ident(c, Kind::Until)?,
                 'w' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::Walkabout)?,
                 'w' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::Whatabout)?,
-                't' if self.peek_is('h') => self.eat_keyword_or_ident(c, Kind::HardYakkaFor)?,
-                'n' if self.peek_is('a') => self.eat_nah_or_yeah_or_ident(c, Kind::Nah)?,
-
-                'b' => {
-                    if self.peek_is('a') {
-                        self.eat_keyword_or_ident(c, Kind::Bail)?
-                    } else if self.peek_is('u') {
-                        self.eat_keyword_or_ident(c, Kind::BuggerAll)?
-                    } else {
-                        self.eat_identifier(c)?
-                    }
-                }
-
-                'i' => {
-                    if self.peek_is('m') {
-                        self.eat_keyword_or_ident(c, Kind::Import)?
-                    } else if self.peek_is(' ') {
-                        self.eat_keyword_or_ident(c, Kind::IReckon)?
-                    } else if self.peek_is('s') {
-                        match self.eat_keyword_or_ident(c, Kind::Isa)? {
-                            Kind::Isa => Kind::Isa,
-                            Kind::Ident(maybe_is) if maybe_is.to_ascii_lowercase() == "is" => {
-                                Kind::Is
-                            }
-                            ident => ident,
-                        }
-                    } else if self.peek_is('\'') {
-                        self.eat_keyword_or_ident(c, Kind::IllHaveA)?
-                    } else {
-                        self.eat_identifier(c)?
-                    }
-                }
-
-                'y' => {
-                    if self.peek_is('a') {
-                        self.eat_keyword_or_ident(c, Kind::YaReckon)?
-                    } else if self.peek_is('e') {
-                        self.eat_nah_or_yeah_or_ident(c, Kind::Yeah)?
-                    } else {
-                        self.eat_identifier(c)?
-                    }
-                }
-
+                'y' if self.peek_is('a') => self.eat_keyword_or_ident(c, Kind::YaReckon)?,
+                'y' if self.peek_is('e') => self.eat_nah_or_yeah_or_ident(c, Kind::Yeah)?,
                 '"' => self.eat_string()?,
+
                 _ => {
                     if c.is_digit(10) {
                         self.eat_number(c)?
@@ -357,6 +335,42 @@ impl<'a, T: Source> Lexer<T> {
         }
     }
 
+    fn eat_is_or_isa(&mut self, first: char) -> Result<Kind> {
+        match self.eat_keyword_or_ident(first, Kind::Isa)? {
+            Kind::Isa => Ok(Kind::Isa),
+            Kind::Ident(maybe_is) if maybe_is.to_ascii_lowercase() == "is" => Ok(Kind::Is),
+            ident => Ok(ident),
+        }
+    }
+
+    fn eat_block_comment_or_ident(&mut self, first: char) -> Result<Option<Kind>> {
+        match self.eat_keyword_or_ident(first, Kind::OiMate) {
+            Err(_) => Ok(Some(self.eat_identifier(first)?)),
+            Ok(_) => {
+                self.eat_block_comment()?;
+                Ok(None)
+            }
+        }
+    }
+
+    fn eat_block_comment(&mut self) -> Result<()> {
+        loop {
+            match self.next().map(|c| c.to_ascii_lowercase()) {
+                None => break,
+                Some('\n') => {
+                    self.line += 1;
+                }
+                Some('g') => {
+                    if self.eat_keyword(Kind::GotIt, true).is_ok() {
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
     fn eat_nah_or_yeah_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {
         let res: Result<Kind> = match self.eat_keyword(kind, false) {
             Err(_) => self.eat_identifier(first),
@@ -366,6 +380,14 @@ impl<'a, T: Source> Lexer<T> {
             }
         };
         res
+    }
+
+    fn eat_reckon_or_fully_reckon(&mut self, first: char) -> Result<Kind> {
+        if self.peek_n_is(2, 'f', false) {
+            self.eat_keyword_or_ident(first, Kind::IFullyReckon)
+        } else {
+            self.eat_keyword_or_ident(first, Kind::IReckon)
+        }
     }
 
     fn eat_keyword_or_ident(&mut self, first: char, kind: Kind) -> Result<Kind> {
@@ -438,6 +460,27 @@ impl<'a, T: Source> Lexer<T> {
         match self.peek() {
             Some(ch) => ch.to_ascii_lowercase().eq(&c),
             None => false,
+        }
+    }
+
+    fn peek_n(&mut self, n: usize) -> Option<char> {
+        for _ in 0..(n - 1) {
+            let _ = self.peek_multi();
+        }
+        let c = self.peek_multi();
+        self.src.reset_peek();
+        c
+    }
+
+    fn peek_n_is(&mut self, n: usize, c: char, case_sensitive: bool) -> bool {
+        if let Some(ch) = self.peek_n(n) {
+            if case_sensitive {
+                ch == c
+            } else {
+                ch.to_ascii_lowercase() == c
+            }
+        } else {
+            false
         }
     }
 
