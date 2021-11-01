@@ -9,7 +9,7 @@ use super::{BuiltIn, Function, UserDefined};
 pub trait AussieCallable {
     fn call(&self, interpreter: &mut Interpreter, args: &[Value]) -> Result<Value>;
     fn arity(&self) -> u8;
-    fn name(&self) -> Rc<String>;
+    fn name(&self) -> &Rc<str>;
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -30,7 +30,7 @@ impl AussieCallable for Callable {
         }
     }
 
-    fn name(&self) -> Rc<String> {
+    fn name(&self) -> &Rc<str> {
         match self {
             Callable::Function(func) => func.name(),
         }

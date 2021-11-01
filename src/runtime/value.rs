@@ -20,9 +20,9 @@ impl From<Value> for String {
         match val {
             Value::Bool(b) => {
                 if b {
-                    "Nah, yeah".into()
+                    "Nah, yeah!".into()
                 } else {
-                    "Yeah, nah".into()
+                    "Yeah, nah!".into()
                 }
             }
             Value::Nil => format!("{}", Kind::BuggerAll),

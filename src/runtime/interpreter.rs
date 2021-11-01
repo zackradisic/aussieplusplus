@@ -14,7 +14,7 @@ use std::{
 use crate::{
     ast::{
         BinaryOp, Expr, ExprNode, ForLoop, If, LogicalOp, Match, Pattern, Range, Stmt, UnaryOp,
-        Var, WhileLoop,
+        Var, VarDecl, WhileLoop,
     },
     parser::error::ParseError,
     runtime::AussieCallable,
@@ -85,18 +85,18 @@ impl<'a> Interpreter<'a> {
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<Exit> {
         match stmt {
             Stmt::Import(ident) => {
-                match BuiltIn::lookup(&ident.name()) {
+                match BuiltIn::lookup(&ident.name) {
                     None => {
                         return Err(RuntimeError::UnknownImport(
                             ident.line(),
-                            ident.name().to_string(),
+                            ident.name.to_string(),
                         )
                         .into());
                     }
-                    Some(builtin) => self
-                        .env
-                        .borrow_mut()
-                        .define(builtin.name(), Value::Callable(Rc::new(builtin.into()))),
+                    Some(builtin) => self.env.borrow_mut().define(
+                        builtin.name().clone(),
+                        Value::Callable(Rc::new(builtin.into())),
+                    ),
                 };
                 Ok(None)
             }
@@ -116,7 +116,7 @@ impl<'a> Interpreter<'a> {
 
                 self.env
                     .borrow_mut()
-                    .define(fn_decl.name(), Value::Callable(Rc::new(function)));
+                    .define(fn_decl.name().clone(), Value::Callable(Rc::new(function)));
 
                 Ok(None)
             }
@@ -133,13 +133,15 @@ impl<'a> Interpreter<'a> {
                 let _ = self.evaluate(expr_node)?;
                 Ok(None)
             }
-            Stmt::VarDecl(ident, initializer) => {
+            Stmt::VarDecl(VarDecl {
+                ident, initializer, ..
+            }) => {
                 let value = match initializer {
                     None => Value::Nil,
                     Some(expr_node) => self.evaluate(expr_node)?,
                 };
 
-                self.env.borrow_mut().define(ident.name(), value);
+                self.env.borrow_mut().define(ident.name.clone(), value);
 
                 Ok(None)
             }
@@ -191,7 +193,7 @@ impl<'a> Interpreter<'a> {
                     None
                 };
 
-                env.define(var.unwrap().name(), val);
+                env.define(var.unwrap().name().clone(), val);
 
                 self.execute_block(&branch.body, Rc::new(RefCell::new(env)))
             }
@@ -303,7 +305,9 @@ impl<'a> Interpreter<'a> {
             }
             Expr::Assign(ref var, ref expr) => {
                 let value = self.evaluate(expr)?;
-                self.env.borrow_mut().assign(var.name(), value.clone());
+                self.env
+                    .borrow_mut()
+                    .assign(var.name().clone(), value.clone());
                 Ok(value)
             }
             Expr::Var(ref var) => self.lookup(var).map_or_else(
@@ -323,6 +327,8 @@ impl<'a> Interpreter<'a> {
                 match (op, right) {
                     (UnaryOp::Bang, right) => Ok(Value::Bool(!Self::is_truthy(&right))),
                     (UnaryOp::Minus, Value::Number(right)) => Ok(Value::Number(right * -1f64)),
+                    (UnaryOp::Incr, Value::Number(right)) => Ok(Value::Number(right + 1f64)),
+                    (UnaryOp::Decr, Value::Number(right)) => Ok(Value::Number(right - 1f64)),
                     _ => {
                         Err(RuntimeError::new_syntax("invalid unary operation", expr.line()).into())
                     }
@@ -403,6 +409,7 @@ impl<'a> Interpreter<'a> {
                 (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
                 (Value::String(a), Value::String(b)) => Ok(Value::String(a + &b)),
                 (Value::String(a), b) => Ok(Value::String(a.add(b.to_string().as_str()))),
+                (a, Value::String(b)) => Ok(Value::String(b.add(a.to_string().as_str()))),
                 _ => Err(RuntimeError::new_syntax(
                     "Both operands cannot be converted to strings",
                     line,

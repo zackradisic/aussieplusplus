@@ -1,9 +1,9 @@
 use std::{collections::HashMap, mem, rc::Rc};
 
-use itertools::Itertools;
-
 use crate::{
-    ast::{Expr, ExprNode, FnDecl, ForLoop, Ident, If, Match, Pattern, Stmt, Var as AstVar},
+    ast::{
+        Expr, ExprNode, FnDecl, ForLoop, Ident, If, Match, Pattern, Stmt, Var as AstVar, VarDecl,
+    },
     token::Token,
 };
 
@@ -27,7 +27,7 @@ struct Var {
 }
 
 pub struct Resolver {
-    scopes: Vec<HashMap<Rc<String>, Var>>,
+    scopes: Vec<HashMap<Rc<str>, Var>>,
     had_error: bool,
     cur_fn: FunctionKind,
 }
@@ -52,7 +52,11 @@ impl Resolver {
     fn stmt(&mut self, stmt: &mut Stmt) {
         match stmt {
             Stmt::Block(stmts) => self.block_stmt(stmts),
-            Stmt::VarDecl(name, init) => self.var_stmt(name, init),
+            Stmt::VarDecl(VarDecl {
+                ident,
+                initializer,
+                immutable,
+            }) => self.var_stmt(ident, initializer, *immutable),
             Stmt::FnDecl(decl) => self.func_stmt(decl, FunctionKind::Function),
             Stmt::If(If { cond, then, else_ }) => self.if_stmt(cond, then, else_),
             Stmt::Print(expr) => self.print_stmt(expr),
@@ -73,8 +77,8 @@ impl Resolver {
         self.end_scope();
     }
 
-    fn var_stmt(&mut self, name: &Ident, init: &mut Option<ExprNode>) {
-        self.declare(name, false);
+    fn var_stmt(&mut self, name: &Ident, init: &mut Option<ExprNode>, constant: bool) {
+        self.declare(name, constant);
         if let Some(init) = init {
             self.expr(init.expr_mut());
         }
@@ -158,15 +162,16 @@ impl Resolver {
         self.define(name);
     }
 
-    fn declare(&mut self, name: &Ident, immutable: bool) {
+    fn declare(&mut self, ident: &Ident, immutable: bool) {
         let mut exists = false;
+        let name = &ident.name;
+
         if let Some(scope) = self.scopes.last_mut() {
-            let name = name.name();
-            if scope.contains_key(&*name) {
+            if scope.contains_key(name) {
                 exists = true;
             }
             scope.insert(
-                name,
+                name.clone(),
                 Var {
                     in_initializer: false,
                     immutable,
@@ -176,8 +181,8 @@ impl Resolver {
 
         if exists {
             self.print_error(
-                name.line(),
-                &name.name(),
+                ident.line(),
+                name,
                 "WAKE UP FUCK-WIT! A VARIABLE WITH THAT NAME ALREADY EXISTS IN THIS SCOPE.",
             )
         }
@@ -185,10 +190,10 @@ impl Resolver {
 
     fn define(&mut self, name: &Ident) {
         if let Some(scope) = self.scopes.last_mut() {
-            if let Some(v) = scope.get_mut(&name.name()) {
+            if let Some(v) = scope.get_mut(&name.name) {
                 v.in_initializer = true;
             } else {
-                self.print_error(name.line(), &name.name(), "CAN'T DEFINE AN UNDECLARED VAR")
+                self.print_error(name.line(), &name.name, "CAN'T DEFINE AN UNDECLARED VAR")
             }
         }
     }
@@ -201,15 +206,28 @@ impl Resolver {
         self.scopes.pop();
     }
 
-    fn resolve_local(&mut self, var: &mut AstVar) -> &mut Var {
+    fn resolve_local(&mut self, var: &mut AstVar) -> Option<&mut Var> {
         for (i, scope) in self.scopes.iter_mut().rev().enumerate() {
             if let Some(v) = scope.get_mut(&*var.name()) {
                 var.scope_distance = i;
-                return v;
+                return Some(v);
             }
         }
 
-        panic!("Unable to resolve var: {:?}", var)
+        // Bug in borrow checker won't allow the code below to compile so just paste it in here for now
+        self.had_error = true;
+        eprintln!(
+            "[line {}] {}: CAAARN! THAT VAR ISN'T DEFINED YA DAFT BUGGER!",
+            var.line(),
+            var.name()
+        );
+        // self.print_error(
+        //     var.line(),
+        //     var.name(),
+        //     "CAAARN! THAT VAR ISN'T DEFINED YA DAFT BUGGER!",
+        // );
+
+        None
     }
 
     fn resolve_fn(&mut self, decl: &mut FnDecl, kind: FunctionKind) {
@@ -259,14 +277,14 @@ impl Resolver {
     fn expr_var(&mut self, var: &mut AstVar) {
         let name = var.name();
         if let Some(scope) = self.scopes.last() {
-            match scope.get(&name) {
+            match scope.get(name) {
                 Some(Var {
                     in_initializer: initialized,
                     ..
                 }) if !initialized => {
                     return self.print_error(
                     var.line(),
-                        &name,
+                        name,
                         "FUCK ME DEAD MATE... YOU JUST TRIED TO READ A VARIABLE IN ITS INITIALIZER!",
                 );
                 }
@@ -279,9 +297,10 @@ impl Resolver {
 
     fn expr_assign(&mut self, var: &mut AstVar, init: &mut ExprNode) {
         self.expr(init.expr_mut());
-        let v = self.resolve_local(var);
-        if v.immutable {
-            self.print_error(var.line(), &var.name(), "OI, YA CAN'T REDEFINE THIS!")
+        if let Some(v) = self.resolve_local(var) {
+            if v.immutable {
+                self.print_error(var.line(), var.name(), "OI, YA CAN'T REDEFINE THIS!")
+            }
         }
     }
 }

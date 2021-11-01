@@ -26,7 +26,7 @@ IMPOHT ME FUNC ChuckSomeDice;
 THE HARD YAKKA FOR dreamtime IS () <
 	GIMME "'boutta get some winks mate";
 
-	I RECKON I'LL HAVE A WALKABOUT UNTIL (YEAH, NAH) <
+	I RECKON I'LL HAVE A WALKABOUT UNTIL (YEAH, NAH!) <
 	    GIMME "zZz...";
 		
 		HitTheSack(1000);

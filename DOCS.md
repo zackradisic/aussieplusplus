@@ -30,7 +30,7 @@ Booleans are any sequence of `NAH`s and `YEAH`s separated by whitespace, a comma
 // Booleans
 I RECKON thisIsFalse = YEAH, NAH!;
 I RECKON thisIsTrue = NAH, YEAH!;
-I RECKON alsoTrue = NAH YEAH YEAH YEAH YEAH YEAH NAH!
+I RECKON alsoTrue = NAH YEAH YEAH YEAH YEAH YEAH YEAH!
 I RECKON wow = NAH YEAH NAH 
 NAH YEAH NAH NAH YEAH NAH NAH YEAH NAH!
 ```

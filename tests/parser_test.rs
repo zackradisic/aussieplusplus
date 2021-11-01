@@ -1,7 +1,7 @@
 use aussie_plus_plus::{
     ast::{
         BinaryOp, Expr, ExprNode, ForLoop, Ident, If, Match, MatchBranch, Pattern, RangeBound,
-        Stmt, UnaryOp, Var,
+        Stmt, UnaryOp, Var, VarDecl,
     },
     lexer::{lexer, source},
     parser::parser,
@@ -97,16 +97,17 @@ fn test_parse_assign() {
         |stmts| {
             assert_eq!(
                 stmts[1],
-                Stmt::VarDecl(
-                    ("y", 3).into(),
-                    Some(ExprNode::new(
+                Stmt::VarDecl(VarDecl {
+                    ident: ("y", 3).into(),
+                    initializer: Some(ExprNode::new(
                         Expr::Assign(
                             Var::new(("x", 3).into(), usize::MAX),
                             Box::new(ExprNode::new(Expr::Literal(10.into()), 3)),
                         ),
                         3,
-                    ))
-                )
+                    )),
+                    immutable: false
+                })
             );
         },
     );
@@ -116,8 +117,8 @@ fn test_parse_assign() {
 fn test_parse_match() {
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all;
-                    Yeah, nah ~ 1;
+                    Nah, yeah! ~ Bugger all;
+                    Yeah, nah! ~ 1;
                 >",
         |stmts| {
             let cond = ExprNode::new(
@@ -131,7 +132,7 @@ fn test_parse_match() {
             let branches = vec![
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::NahYeah.into();
+                        let pat: Option<Pattern> = Kind::True.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2))],
@@ -139,7 +140,7 @@ fn test_parse_match() {
                 ),
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::YeahNah.into();
+                        let pat: Option<Pattern> = Kind::False.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(1.into()), 3))],
@@ -168,8 +169,16 @@ fn test_parse_block() {
                 1,
             );
             let then = Box::new(Stmt::Block(vec![
-                Stmt::VarDecl(("y", 2).into(), None),
-                Stmt::VarDecl(("z", 3).into(), None),
+                Stmt::VarDecl(VarDecl {
+                    ident: ("y", 2).into(),
+                    initializer: None,
+                    immutable: false,
+                }),
+                Stmt::VarDecl(VarDecl {
+                    ident: ("z", 3).into(),
+                    initializer: None,
+                    immutable: false,
+                }),
             ]));
             assert_eq!(
                 stmts[0],
@@ -184,8 +193,8 @@ fn test_parse_block() {
 
     test_parse(
         "ya reckon x == 2 is a <
-                    Nah, yeah ~ Bugger all;
-                    Yeah, nah ~ 1;
+                    Nah, yeah! ~ Bugger all;
+                    Yeah, nah! ~ 1;
                 >",
         |stmts| {
             let cond = ExprNode::new(
@@ -199,7 +208,7 @@ fn test_parse_block() {
             let branches = vec![
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::NahYeah.into();
+                        let pat: Option<Pattern> = Kind::True.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(Value::Nil), 2))],
@@ -207,7 +216,7 @@ fn test_parse_block() {
                 ),
                 MatchBranch::new(
                     {
-                        let pat: Option<Pattern> = Kind::YeahNah.into();
+                        let pat: Option<Pattern> = Kind::False.into();
                         pat.unwrap()
                     },
                     vec![Stmt::Expr(ExprNode::new(Expr::Literal(1.into()), 3))],
@@ -227,36 +236,45 @@ fn test_parse_var() {
         |stmts| {
             assert_eq!(
                 stmts[0],
-                Stmt::VarDecl(
-                    ("x", 1).into(),
-                    Some(ExprNode::new(Expr::Literal(2.into()), 1))
-                )
+                Stmt::VarDecl(VarDecl {
+                    ident: ("x", 1).into(),
+                    initializer: Some(ExprNode::new(Expr::Literal(2.into()), 1)),
+                    immutable: false,
+                })
             );
-            assert_eq!(stmts[1], Stmt::VarDecl(Ident::new("y".into(), 2), None))
+            assert_eq!(
+                stmts[1],
+                Stmt::VarDecl(VarDecl {
+                    ident: Ident::new("y".into(), 2),
+                    initializer: None,
+                    immutable: false
+                })
+            )
         },
     );
 
     test_parse("i reckon x = 5 + 2;", |stmts| {
         assert_eq!(
             stmts[0],
-            Stmt::VarDecl(
-                Ident::new("x".into(), 1),
-                Some(ExprNode::new(
+            Stmt::VarDecl(VarDecl {
+                ident: Ident::new("x".into(), 1),
+                initializer: Some(ExprNode::new(
                     Expr::Binary(
                         Box::new(ExprNode::new(Expr::Literal(5.into()), 1)),
                         BinaryOp::Plus,
                         Box::new(ExprNode::new(Expr::Literal(2.into()), 1)),
                     ),
                     1
-                ))
-            )
+                )),
+                immutable: false,
+            })
         );
     });
 }
 
 #[test]
 fn test_parse_if() {
-    test_parse("ya reckon 5 == 2 ? nah, yeah;", |stmts| {
+    test_parse("ya reckon 5 == 2 ? nah, yeah!;", |stmts| {
         assert_eq!(
             stmts[0],
             Stmt::If(If {
@@ -277,6 +295,32 @@ fn test_parse_if() {
 
 #[test]
 fn test_parse_unary_op() {
+    test_parse("GOOD ON YA 1;", |stmts| {
+        assert_eq!(
+            stmts[0],
+            Stmt::Expr(ExprNode::new(
+                Expr::Unary(
+                    UnaryOp::Incr,
+                    Box::new(ExprNode::new(Expr::Literal(1.into()), 1)),
+                ),
+                1
+            ))
+        );
+    });
+
+    test_parse("PULL YA HEAD IN 1;", |stmts| {
+        assert_eq!(
+            stmts[0],
+            Stmt::Expr(ExprNode::new(
+                Expr::Unary(
+                    UnaryOp::Decr,
+                    Box::new(ExprNode::new(Expr::Literal(1.into()), 1)),
+                ),
+                1
+            ))
+        );
+    });
+
     test_parse("!1;", |stmts| {
         assert_eq!(
             stmts[0],

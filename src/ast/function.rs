@@ -18,8 +18,8 @@ impl FnDecl {
         }
     }
 
-    pub fn name(&self) -> Rc<String> {
-        self.ident.name()
+    pub fn name(&self) -> &Rc<str> {
+        &self.ident.name
     }
 }
 

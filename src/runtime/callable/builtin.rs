@@ -57,7 +57,7 @@ impl AussieCallable for BuiltIn {
         }
     }
 
-    fn name(&self) -> Rc<String> {
+    fn name(&self) -> &Rc<str> {
         match self {
             Self::Sleep(sleep) => sleep.name(),
             Self::Time(time) => time.name(),
@@ -78,13 +78,13 @@ impl Display for BuiltIn {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Sleep {
-    name: Rc<String>,
+    name: Rc<str>,
 }
 
 impl Default for Sleep {
     fn default() -> Self {
         Self {
-            name: Rc::new("HitTheSack".into()),
+            name: Rc::from("HitTheSack"),
         }
     }
 }
@@ -109,20 +109,20 @@ impl AussieCallable for Sleep {
         1
     }
 
-    fn name(&self) -> Rc<String> {
-        self.name.clone()
+    fn name(&self) -> &Rc<str> {
+        &self.name
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Time {
-    name: Rc<String>,
+    name: Rc<str>,
 }
 
 impl Default for Time {
     fn default() -> Self {
         Self {
-            name: Rc::new("GimmeTime".into()),
+            name: Rc::from("GimmeTime"),
         }
     }
 }
@@ -154,14 +154,14 @@ impl AussieCallable for Time {
         0
     }
 
-    fn name(&self) -> Rc<String> {
-        self.name.clone()
+    fn name(&self) -> &Rc<str> {
+        &self.name
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct Rand {
-    name: Rc<String>,
+    name: Rc<str>,
     rng: RefCell<ThreadRng>,
 }
 
@@ -174,7 +174,7 @@ impl PartialEq for Rand {
 impl Default for Rand {
     fn default() -> Self {
         Self {
-            name: Rc::new("ChuckSomeDice".into()),
+            name: Rc::from("ChuckSomeDice"),
             rng: RefCell::new(rand::thread_rng()),
         }
     }
@@ -208,7 +208,7 @@ impl AussieCallable for Rand {
         2
     }
 
-    fn name(&self) -> Rc<String> {
-        self.name.clone()
+    fn name(&self) -> &Rc<str> {
+        &self.name
     }
 }

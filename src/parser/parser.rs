@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 
 use crate::ast::{
     FnDecl, ForLoop, Ident, If, LogicalOp, Match, MatchBranch, Pattern, RangeBound, Stmt, Var,
-    WhileLoop,
+    VarDecl, WhileLoop,
 };
 use crate::runtime::{Value, MAX_ARITY};
 use crate::{
@@ -91,12 +91,14 @@ impl Parser {
     fn declaration(&mut self) -> Result<Stmt> {
         match_toks!(self,
             _ => self.statement(),
-            Kind::IReckon => self.var_decl_or_loop(),
+            (Kind::IReckon | Kind::IFullyReckon) => self.var_decl_or_loop(),
             Kind::HardYakkaFor => self.fn_decl()
         )
     }
 
     fn var_decl_or_loop(&mut self) -> Result<Stmt> {
+        let immutable = matches!(self.previous().kind(), Kind::IFullyReckon);
+
         if self.match_tok(Kind::IllHaveA) {
             self.consume(Kind::Walkabout)?;
             return self.loops(None);
@@ -112,12 +114,12 @@ impl Parser {
                 )
             },
             Kind::Semicolon => {
-                Ok(Stmt::VarDecl(ident, None))
+                Ok(Stmt::VarDecl(VarDecl{ident, initializer:None, immutable}))
             },
             Kind::Assign => {
                 let initializer = self.expression()?;
                 self.consume(Kind::Semicolon)?;
-                Ok(Stmt::VarDecl(ident, Some(initializer)))
+                Ok(Stmt::VarDecl(VarDecl{ident, initializer: Some(initializer), immutable}))
             },
             Kind::Isa => {
                 self.consume(Kind::Walkabout)?;
@@ -186,7 +188,6 @@ impl Parser {
                 self.consume(Kind::To)?;
                 let end = {
                     let expr = self.expression()?;
-                    println!("EXpr is: {:?}", expr);
                     match_toks!(self,
                         k =>
                         return Err(ParseError::ExpectedTokens(
@@ -347,8 +348,8 @@ impl Parser {
                     vec![
                         Kind::Number(420.into()),
                         Kind::String("any string literal".into()),
-                        Kind::NahYeah,
-                        Kind::YeahNah,
+                        Kind::True,
+                        Kind::False,
                         Kind::BuggerAll,
                         Kind::Ident("any identifier".into()),
                     ],
@@ -538,7 +539,7 @@ impl Parser {
 
     fn unary(&mut self) -> Result<ExprNode> {
         match self.peek().kind() {
-            Kind::Minus | Kind::Bang => {
+            Kind::Minus | Kind::Bang | Kind::GoodOnYa | Kind::PullYaHeadIn => {
                 let tok = self.advance();
                 let op: Option<UnaryOp> = tok.kind().into();
                 let right = self.unary()?;
@@ -593,8 +594,8 @@ impl Parser {
         let expr = match next.kind() {
             Kind::Number(num) => Expr::Literal(num.into()),
             Kind::String(s) => Expr::Literal(s.into()),
-            Kind::NahYeah => Expr::Literal(true.into()),
-            Kind::YeahNah => Expr::Literal(false.into()),
+            Kind::True => Expr::Literal(true.into()),
+            Kind::False => Expr::Literal(false.into()),
             Kind::BuggerAll => Expr::Literal(Value::Nil),
             Kind::Ident(name) => Expr::Var(Var::new(Ident::new(name, line), usize::MAX)),
             Kind::LeftParen => {

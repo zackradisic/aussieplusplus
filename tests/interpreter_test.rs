@@ -5,7 +5,13 @@ use aussie_plus_plus::{
     runtime::Interpreter,
 };
 
-fn test_code(src: &str, expected: &str) {
+enum FallibleKind {
+    None,
+    Resolver,
+    Interpreter,
+}
+
+fn test(src: &str, expected: &str, fallible_kind: FallibleKind) {
     let expected = if expected.is_empty() {
         expected.to_owned()
     } else {
@@ -14,20 +20,33 @@ fn test_code(src: &str, expected: &str) {
     let mut s = "G'DAY MATE! ".to_string();
     s.push_str(src);
     let mut lex = Lexer::new(source::Regular::new(s.chars()));
-    let (tokens, _) = lex.lex();
+    let (tokens, failed) = lex.lex();
+
+    if failed {
+        panic!("Lexing failed");
+    }
+
     println!("Tokens: {:#?}", tokens);
     let mut parser = Parser::new(tokens);
     let mut stmts = parser.parse().unwrap();
 
     if Resolver::new().resolve(&mut stmts) {
-        panic!("Resolver failed")
+        if !matches!(fallible_kind, FallibleKind::Resolver) {
+            panic!("Resolver failed")
+        } else {
+            return;
+        }
     }
 
     let mut buf: Vec<u8> = Vec::with_capacity(128);
     let mut iptr = Interpreter::new_with_writer(&mut buf);
 
     if let Err(e) = iptr.interpret(stmts) {
-        panic!("Failed to interpret: {}", e);
+        if !matches!(fallible_kind, FallibleKind::Interpreter) {
+            panic!("Failed to interpret: {}", e);
+        } else {
+            return;
+        }
     }
 
     println!("Testing expression: {}", s);
@@ -39,15 +58,33 @@ fn test_code(src: &str, expected: &str) {
     }
 }
 
+fn test_code(src: &str, expected: &str) {
+    test(src, expected, FallibleKind::None)
+}
+
+#[test]
+fn test_constants() {
+    test(
+        "
+        I FULLY RECKON x = 420;
+        GIMME x;
+        x = 69;",
+        "420",
+        FallibleKind::Resolver,
+    );
+}
+
 #[test]
 fn test_imports() {
     test_code(
         "
         IMPOHT ME FUNC ChuckSomeDice;
         IMPOHT ME FUNC HitTheSack;
+        IMPOHT ME FUNC GimmeTime;
 
         HitTheSack(100);
         ChuckSomeDice(0, 1);
+        GimmeTime();
 ",
         "",
     );
@@ -86,7 +123,7 @@ fn test_while_loop() {
 
     test_code(
         "
-        i reckon i'll have a walkabout until (Yeah, nah) <
+        i reckon i'll have a walkabout until (Yeah, nah!) <
             gimme \"bloody oath!\";
             mate fuck this;
         >
@@ -253,8 +290,8 @@ fn test_match() {
     test_code(
         "i reckon x = 2;
         ya reckon x == 2 is a <
-                    Nah, yeah ~ gimme \"FARK\";
-                    Yeah, nah ~ gimme 420;
+                    Nah, yeah! ~ gimme \"FARK\";
+                    Yeah, nah! ~ gimme 420;
                 >",
         "FARK",
     );
@@ -333,7 +370,7 @@ fn test_if() {
     test_code(
         "
 YA RECKON 1 == 2 ? GIMME \"fark we broke maths!\";
-WHATABOUT NAH, YEAH == YEAH, NAH ? GIMME \"strewth we broke boolean logic!\";
+WHATABOUT NAH, YEAH! == YEAH, NAH! ? GIMME \"strewth we broke boolean logic!\";
 WHATABOUT ? GIMME \"the universe is okay\";",
         "the universe is okay",
     );
@@ -341,7 +378,7 @@ WHATABOUT ? GIMME \"the universe is okay\";",
     test_code(
         "
 YA RECKON 1 == 2 ? GIMME \"fark we broke maths!\";
-WHATABOUT YEAH, NAH == YEAH, NAH ? GIMME \"lmao\";
+WHATABOUT YEAH, NAH! == YEAH, NAH! ? GIMME \"lmao\";
 WHATABOUT ? GIMME \"the universe is okay\";",
         "lmao",
     );
@@ -349,23 +386,36 @@ WHATABOUT ? GIMME \"the universe is okay\";",
 
 #[test]
 fn test_ops() {
+    test_code(
+        "gimme !NAH YEAH YEAH YEAH YEAH YEAH YEAH NAH!;
+        gimme !YEAH YEAH YEAH YEAH NAH YEAH!;",
+        "Nah, yeah!\nYeah, nah!",
+    );
+    test_code("gimme pull ya head in 70;", "69");
+    test_code("gimme good on ya 68;", "69");
+    test_code("gimme good on ya good on ya good on ya 417;", "420");
+    test_code(
+        "gimme pull ya head in pull ya head in pull ya head in 423;",
+        "420",
+    );
+
     test_code("gimme 5 + 2;", "7");
     test_code("gimme 5 - 2;", "3");
     test_code("gimme 5 * 2;", "10");
     test_code("gimme 5 / 2;", "2.5");
-    test_code("gimme 5 > 2;", "Nah, yeah");
-    test_code("gimme 5 >= 2;", "Nah, yeah");
-    test_code("gimme 5 < 2;", "Yeah, nah");
-    test_code("gimme 5 <= 2;", "Yeah, nah");
-    test_code("gimme 5 == 2;", "Yeah, nah");
-    test_code("gimme 5 != 2;", "Nah, yeah");
+    test_code("gimme 5 > 2;", "Nah, yeah!");
+    test_code("gimme 5 >= 2;", "Nah, yeah!");
+    test_code("gimme 5 < 2;", "Yeah, nah!");
+    test_code("gimme 5 <= 2;", "Yeah, nah!");
+    test_code("gimme 5 == 2;", "Yeah, nah!");
+    test_code("gimme 5 != 2;", "Nah, yeah!");
     test_code("gimme 4 % 2;", "0");
     test_code("gimme 5 % 2;", "1");
 
-    test_code("gimme nah, yeah && yeah, nah;", "Yeah, nah");
-    test_code("gimme nah, yeah && nah, yeah;", "Nah, yeah");
-    test_code("gimme nah, yeah || yeah, nah;", "Nah, yeah");
-    test_code("gimme yeah, nah || yeah, nah;", "Yeah, nah");
+    test_code("gimme nah, yeah! && yeah, nah!;", "Yeah, nah!");
+    test_code("gimme nah, yeah! && nah, yeah!;", "Nah, yeah!");
+    test_code("gimme nah, yeah! || yeah, nah!;", "Nah, yeah!");
+    test_code("gimme yeah, nah! || yeah, nah!;", "Yeah, nah!");
 
     test_code("gimme ((5 + 5) / 2) * 2;", "10");
 

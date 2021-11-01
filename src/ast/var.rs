@@ -1,5 +1,14 @@
 use std::{fmt::Display, rc::Rc};
 
+use super::ExprNode;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct VarDecl {
+    pub ident: Ident,
+    pub initializer: Option<ExprNode>,
+    pub immutable: bool,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Var {
     pub ident: Ident,
@@ -19,8 +28,8 @@ impl Var {
         self.ident.clone()
     }
 
-    pub fn name(&self) -> Rc<String> {
-        self.ident.name()
+    pub fn name(&self) -> &Rc<str> {
+        &self.ident.name
     }
 
     pub fn line(&self) -> usize {
@@ -54,20 +63,16 @@ impl From<(&str, usize, usize)> for Var {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ident {
-    pub name: Rc<String>,
+    pub name: Rc<str>,
     line: usize,
 }
 
 impl Ident {
     pub fn new(name: String, line: usize) -> Self {
         Self {
-            name: Rc::new(name),
+            name: Rc::from(name),
             line,
         }
-    }
-
-    pub fn name(&self) -> Rc<String> {
-        self.name.clone()
     }
 
     pub fn line(&self) -> usize {
@@ -78,7 +83,7 @@ impl Ident {
 impl From<(String, usize)> for Ident {
     fn from(tup: (String, usize)) -> Self {
         Self {
-            name: Rc::new(tup.0),
+            name: Rc::from(tup.0),
             line: tup.1,
         }
     }
