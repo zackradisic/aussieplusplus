@@ -2,7 +2,8 @@ use std::{collections::HashMap, mem, rc::Rc};
 
 use crate::{
     ast::{
-        Expr, ExprNode, FnDecl, ForLoop, Ident, If, Match, Pattern, Stmt, Var as AstVar, VarDecl,
+        Expr, ExprNode, FnDecl, ForLoop, Ident, If, Match, Pattern, Stmt, UnaryOp, Var as AstVar,
+        VarDecl,
     },
     token::Token,
 };
@@ -270,7 +271,20 @@ impl Resolver {
                 self.expr(left.expr_mut());
                 self.expr(right.expr_mut());
             }
+            Expr::Unary(UnaryOp::Incr | UnaryOp::Decr, expr) => self.expr_incr_decr(expr),
             Expr::Unary(_, expr) => self.expr(expr.expr_mut()),
+        }
+    }
+
+    fn expr_incr_decr(&mut self, expr: &mut ExprNode) {
+        if let Expr::Var(v) = expr.expr_mut() {
+            if let Some(var) = self.resolve_local(v) {
+                if var.immutable {
+                    self.print_error(v.line(), v.name(), "HEY DRONGO, YA CAN'T CHANGE THAT VAR!")
+                }
+            }
+        } else {
+            self.expr(expr.expr_mut())
         }
     }
 
