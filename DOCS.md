@@ -111,6 +111,8 @@ THE HARD YAKKA FOR greeting() IS <
 GIMME greeting();
 ```
 
+Anony
+
 ## Standard library / Built-ins
 Use `IMPOHT ME FUNC <func>` to import built-in functions. The language currently comes with two built-ins, `ChuckSomeDice(start, end)` and `HitTheSack(ms)`:
 
@@ -129,4 +131,31 @@ THE HARD YAKKA FOR goIntoAComa() IS <
 >
 
 goIntoAComa();
+```
+
+## Comments
+All lines before `G'DAY MATE!` and after `CHEERS C***!` are ignored, and can be used to document your module.
+
+`//` marks the start of documentation until the end of that line.
+
+Block comments can be opened with `OI MATE!` and closed with `GOT IT?`.
+
+```aussie
+You bloody bewdy, cobbadiggamate, this is a rippa module!
+
+G'DAY MATE!
+
+THE HARD YAKKA FOR YOU_CAN_GET_IT_DOING(NOTHING_AT_ALL) IS <
+	I RECKON A_HARD_EARNED_THIRST = "A BIG COLD BEER"; // And the best cold beer is Vic, Victoria Bitter.
+OI MATE!
+But I drink to get p*ssed!
+GOT IT?
+        BAIL A_HARD_EARNED_THIRST;
+>
+
+CHEERS C***!
+
+References:
+- https://www.youtube.com/watch?v=0uPCi_KnCiQ
+- https://www.youtube.com/watch?v=7n9IE2jRtgs
 ```
