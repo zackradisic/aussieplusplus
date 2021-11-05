@@ -131,8 +131,6 @@ THE HARD YAKKA FOR greeting() IS <
 GIMME greeting();
 ```
 
-Anony
-
 ## Standard library / Built-ins
 Use `IMPOHT ME FUNC <func>` to import built-in functions. The language currently comes with two built-ins, `ChuckSomeDice(start, end)` and `HitTheSack(ms)`:
 
