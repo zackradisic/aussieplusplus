@@ -398,6 +398,18 @@ fn test_ops() {
         "gimme pull ya head in pull ya head in pull ya head in 423;",
         "420",
     );
+    test_code("I RECKON x = 5; GOOD ON YA x; GIMME x;", "6");
+    test_code("I RECKON x = 5; PULL YA HEAD IN x; GIMME x;", "4");
+    test(
+        "I FULLY RECKON x = 5; GOOD ON YA x;",
+        "",
+        FallibleKind::Resolver,
+    );
+    test(
+        "I FULLY RECKON x = 5; PULL YA HEAD IN x;",
+        "",
+        FallibleKind::Resolver,
+    );
 
     test_code("gimme 5 + 2;", "7");
     test_code("gimme 5 - 2;", "3");

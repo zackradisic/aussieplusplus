@@ -324,15 +324,25 @@ impl<'a> Interpreter<'a> {
             Expr::Unary(op, ref expr) => {
                 let right = self.evaluate(expr)?;
 
-                match (op, right) {
-                    (UnaryOp::Bang, right) => Ok(Value::Bool(!Self::is_truthy(&right))),
-                    (UnaryOp::Minus, Value::Number(right)) => Ok(Value::Number(right * -1f64)),
-                    (UnaryOp::Incr, Value::Number(right)) => Ok(Value::Number(right + 1f64)),
-                    (UnaryOp::Decr, Value::Number(right)) => Ok(Value::Number(right - 1f64)),
+                let val = match (op, right) {
+                    (UnaryOp::Bang, right) => return Ok(Value::Bool(!Self::is_truthy(&right))),
+                    (UnaryOp::Minus, Value::Number(right)) => Value::Number(right * -1f64),
+                    (UnaryOp::Incr, Value::Number(right)) => Value::Number(right + 1f64),
+                    (UnaryOp::Decr, Value::Number(right)) => Value::Number(right - 1f64),
                     _ => {
-                        Err(RuntimeError::new_syntax("invalid unary operation", expr.line()).into())
+                        return Err(RuntimeError::new_syntax(
+                            "invalid unary operation",
+                            expr.line(),
+                        )
+                        .into())
                     }
+                };
+
+                if let Expr::Var(v) = expr.expr() {
+                    self.env.borrow_mut().assign(v.name().clone(), val.clone());
                 }
+
+                Ok(val)
             }
             Expr::Logical(left, op, right) => match op {
                 LogicalOp::And => match Self::is_truthy(&self.evaluate(left)?) {
