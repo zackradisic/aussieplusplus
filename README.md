@@ -32,7 +32,7 @@ GIMME fibonacci(30);
 Check out [DOCS.md](DOCS.md)
 
 # Contributing
-Check out [CONTRIBUTING.md](CONTRIBUTING.MD)
+Check out [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Contributors ✨
 

@@ -48,6 +48,26 @@ I RECKON goodStr = "fair dinkum mate!";
 // Nil/Null
 I RECKON emptiness = BUGGER ALL;
 ```
+## Operators
+
+Most mathematical operators are familiar from other languages.
+```aussie
+I RECKON a = 1;
+I RECKON b = 2;
+I RECKON sum = a + b;
+I RECKON diff = b - a;
+I RECKON product = a * b;
+I RECKON ratio = a / b;
+```
+
+However, the increment and decrement expressions are unique. To increment a variable `var`, use `GOOD ON YA var`; to decrement, use `PULL YA HEAD IN var`. These expressions are pre-increment and pre-decrement expressions: the value attached to the variable is modified, then returned.
+```aussie
+I RECKON a = 0;
+GOOD ON YA a; // a == 1
+I RECKON b = 10 + GOOD ON YA a; // a == 2, b == 12
+I RECKON c = PULL YA HEAD IN b + GOOD ON YA a; // a == 3, b == 11, c == 14
+PULL YA HEAD IN c; // c == 13
+```
 
 ## Control flow
 `aussie++` supports if statements and basic pattern matching:
@@ -129,4 +149,31 @@ THE HARD YAKKA FOR goIntoAComa() IS <
 >
 
 goIntoAComa();
+```
+
+## Comments
+All lines before `G'DAY MATE!` and after `CHEERS C***!` are ignored, and can be used to document your module.
+
+`//` marks the start of documentation until the end of that line.
+
+Block comments can be opened with `OI MATE!` and closed with `GOT IT?`.
+
+```aussie
+You bloody bewdy, cobbadiggamate, this is a rippa module!
+
+G'DAY MATE!
+
+THE HARD YAKKA FOR YOU_CAN_GET_IT_DOING(NOTHING_AT_ALL) IS <
+	I RECKON A_HARD_EARNED_THIRST = "A BIG COLD BEER"; // And the best cold beer is Vic, Victoria Bitter.
+OI MATE!
+But I drink to get p*ssed!
+GOT IT?
+        BAIL A_HARD_EARNED_THIRST;
+>
+
+CHEERS C***!
+
+References:
+- https://www.youtube.com/watch?v=0uPCi_KnCiQ
+- https://www.youtube.com/watch?v=7n9IE2jRtgs
 ```
