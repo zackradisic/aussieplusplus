@@ -192,7 +192,7 @@ impl AussieCallable for Rand {
             }
         };
 
-        if start > end {
+        if start >= end {
             return Err(RuntimeError::General(
                 "OI MATE, CAN YA FUCKIN' COUNT?? START MUST BE LESS THAN END!!".into(),
             )
